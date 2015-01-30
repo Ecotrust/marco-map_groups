@@ -55,7 +55,7 @@ def request_map_group_invitation(user, group, message=''):
     """Send a request to join a closed group.
     """
     if group.has_member(user):
-        return None
+        return None, False
 
     invite, new = Invitation.objects.get_or_create(user=user, group=group)
 

@@ -174,6 +174,18 @@ class JoinMapGroupTest(TestCase):
                                          associated_user=self.users['usr1'])
         self.assertTrue(log.exists())
 
+        # request the invitation again
+        invite2, new = request_map_group_invitation(self.users['usr1'],
+                                                    self.closed_group)
+        self.assertEqual(invite2, invite)
+        self.assertFalse(new)
+
+        # try to request an invite for an existing member
+        invite, new = request_map_group_invitation(self.users['usr2'],
+                                                   self.closed_group)
+        self.assertIsNone(invite)
+        self.assertFalse(new)
+
 
 class InviteUserToGroupTest(TestCase):
     """Group manager invites someone via email to join a group.

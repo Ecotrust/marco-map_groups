@@ -46,6 +46,9 @@ _urlpatterns = [
 
 def urls(namespace='mapgroups'):
     """Returns a 3-tuple for use with include().
+
+    The including module or project can refer to urls as namespace:urlname,
+    internally, they are referred to as app_name:urlname.
     """
     return (_urlpatterns, 'mapgroups', namespace)
 

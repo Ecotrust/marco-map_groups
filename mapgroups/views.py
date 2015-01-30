@@ -45,10 +45,16 @@ class MapGroupCreate(CreateView):
 
 class MapGroupDetailView(DetailView):
     model = MapGroup
+    context_object_name ='mapgroup'
 
+    def get_context_data(self, **kwargs):
+        context = super(MapGroupDetailView, self).get_context_data(**kwargs)
+        context['title'] = self.object.name
+        return context
 
 
 class MapGroupListView(ListView):
     model = MapGroup
+    context_object_name ='mapgroups'
 
 
