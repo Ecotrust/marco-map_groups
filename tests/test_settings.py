@@ -8,7 +8,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
 
     'tests',
-    'map_groups',
+    'mapgroups',
 ]
 
 MIDDLEWARE_CLASSES = (
@@ -24,3 +24,5 @@ DATABASES = {
         'NAME': 'some.db',
     }
 }
+
+ROOT_URLCONF = 'tests.urls'

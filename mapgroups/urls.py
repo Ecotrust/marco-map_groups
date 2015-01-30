@@ -1,0 +1,51 @@
+"""
+Experimental URL patterns module.
+SRH Jan-2015
+
+For 3rd party modules, I'd like the including project to be able to specify a
+namespace for URL names. At the same time, in the module, I'd like to be able
+to reverse URLs in views, tests, and models without knowledge of what namespace
+the project is using.
+
+The app_name and namespaces are defined external to the module, which seems to
+be a design flaw (or maybe I'm interpreting what the design is supposed to do
+incorrectly).
+
+The best solution seems to be to provide a 'urls()' function which is called
+to get the module's URLs. It sets the app_name to a known value (for use
+internally by the module), and namespace to the value provided by the project,
+for use in the project's code. (I think app_name should be the name of the
+module providing the URLs, but that is not easy to auto-discover, especially if
+the URLs are generated).
+
+Short version:
+Usage:
+
+    import map_groups.urls
+    urls(r'^mount_point/', include(map_groups.urls.urls('Project Name Space'))
+"""
+
+from django.conf.urls import url, include
+from mapgroups.views import MapGroupDetailView, \
+    MapGroupCreate, MapGroupListView
+
+_urlpatterns = [
+    # Map group urls look something like:
+    #   midatlanticoceans.org/g/49/swiftly-sinking-sailfish
+    # but
+    #   midatlanticoceans.org/g/49
+    # will also work
+
+    url(r'^$', MapGroupListView.as_view(), name='list'),
+    url(r'^create/$', MapGroupCreate.as_view(), name='create'),
+    url(r'^(?P<pk>\d+)', MapGroupDetailView.as_view(),
+        name='mapgroup-detail-noslug'),
+    url(r'^(?P<pk>\d+)/(?P<slug>[\w-]+)',
+        MapGroupDetailView.as_view(), name='detail'),
+]
+
+def urls(namespace='mapgroups'):
+    """Returns a 3-tuple for use with include().
+    """
+    return (_urlpatterns, 'mapgroups', namespace)
+
