@@ -7,8 +7,10 @@ from mapgroups.actions import create_map_group, join_map_group, \
     request_map_group_invitation
 from mapgroups.models import MapGroup, MapGroupMember, ActivityLog, Invitation
 
+
 MAPGROUP_CREATE_URL = 'mapgroups:create'
 MAPGROUP_DETAIL_URL = 'mapgroups:detail'
+
 
 def create_users():
     users = {
@@ -23,6 +25,7 @@ def create_users():
         u.save()
 
     return users
+
 
 class MapGroupTest(TestCase):
     def setUp(self):
@@ -41,6 +44,7 @@ class MapGroupTest(TestCase):
 class CreateMapGroupTest(TestCase):
     """User creates a map group.
     """
+
     def setUp(self):
         self.users = create_users()
         self.mg, self.member = create_map_group("Turtles Travel Together",
@@ -67,7 +71,8 @@ class CreateMapGroupTest(TestCase):
         self.assertTrue(manager.is_manager)
 
     def test_group_created_permission_group(self):
-        self.assertTrue(Group.objects.filter(name=self.mg.permission_group_name()).exists())
+        self.assertTrue(
+            Group.objects.filter(name=self.mg.permission_group_name()).exists())
 
     def test_group_owner_in_permission_group(self):
         pgname = self.mg.permission_group_name()
@@ -83,6 +88,7 @@ class CreateMapGroupTest(TestCase):
 class CreateMapGroupViewTest(TestCase):
     """Test the form view
     """
+
     def setUp(self):
         self.users = create_users()
 
@@ -116,7 +122,6 @@ class CreateMapGroupViewTest(TestCase):
         self.assertEqual(resp.status_code, 302)
 
 
-
     def test_create_group_unauth(self):
         c = Client()
 
@@ -137,13 +142,15 @@ class MapGroupDetailTest(TestCase):
 class MapGroupListTest(TestCase):
     pass
 
+
 class JoinMapGroupTest(TestCase):
     """User joins a map group.
     """
 
     def setUp(self):
         self.users = create_users()
-        open_group, _ = create_map_group('Salmon swiftly swam', self.users['usr1'],
+        open_group, _ = create_map_group('Salmon swiftly swam',
+                                         self.users['usr1'],
                                          open=True)
         self.open_group = open_group
         closed_group, _ = create_map_group('Gulls gently glide',
