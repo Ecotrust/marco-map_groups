@@ -2,3 +2,4 @@
 htmlcov
 .coverage
 .idea
+mapgroups.egg-info
