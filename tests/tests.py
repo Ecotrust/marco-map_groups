@@ -1,5 +1,5 @@
 from django.core.urlresolvers import reverse
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.test import TestCase
 from django.test.client import Client
 
@@ -65,6 +65,13 @@ class CreateMapGroupTest(TestCase):
 
         self.assertEqual(manager.map_group, mg)
         self.assertTrue(manager.is_manager)
+
+    def test_group_created_permission_group(self):
+        self.assertTrue(Group.objects.filter(name=self.mg.permission_group_name()).exists())
+
+    def test_group_owner_in_permission_group(self):
+        pgname = self.mg.permission_group_name()
+        self.assertTrue(self.mg.owner.groups.filter(name=pgname).exists())
 
     def tearDown(self):
         for user in self.users.values():

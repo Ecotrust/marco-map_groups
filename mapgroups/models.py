@@ -29,6 +29,11 @@ class MapGroup(models.Model):
     def has_member(self, user):
         return self.mapgroupmember_set.filter(user=user).exists()
 
+    def permission_group_name(self):
+        if not self.pk:
+            raise Exception("Save the model before accessing the perm group name.")
+        return '%s-%s' % (self.slug, self.pk)
+
 
 class MapGroupMember(models.Model):
     user = models.ForeignKey(User)

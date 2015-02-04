@@ -20,3 +20,4 @@ class CreateGroupForm(DivForm):
     name = forms.CharField(max_length=255)
     blurb = forms.CharField(max_length=512)
     is_open = forms.BooleanField()
+
