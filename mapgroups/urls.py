@@ -27,7 +27,7 @@ Usage:
 
 from django.conf.urls import url, include
 from mapgroups.views import MapGroupDetailView, \
-    MapGroupCreate, MapGroupListView
+    MapGroupCreate, MapGroupListView, JoinMapGroupActionView
 
 _urlpatterns = [
     # Map group urls look something like:
@@ -37,11 +37,11 @@ _urlpatterns = [
     # will also work
 
     url(r'^$', MapGroupListView.as_view(), name='list'),
-    url(r'^create/$', MapGroupCreate.as_view(), name='create'),
-    url(r'^(?P<pk>\d+)', MapGroupDetailView.as_view(),
-        name='mapgroup-detail-noslug'),
-    url(r'^(?P<pk>\d+)/(?P<slug>[\w-]+)',
+    url(r'^create$', MapGroupCreate.as_view(), name='create'),
+    url(r'^(?P<pk>\d+)/(?P<slug>[\w-]+)$',
         MapGroupDetailView.as_view(), name='detail'),
+    url(r'^(?P<pk>\d+)/(?P<slug>[\w-]+)/join$',
+        JoinMapGroupActionView.as_view(), name='join'),
 ]
 
 def urls(namespace='mapgroups'):

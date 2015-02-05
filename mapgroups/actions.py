@@ -24,7 +24,7 @@ def create_map_group(name, owner, open=False, blurb=''):
     # Introduce a weak dependency on Groups so the Madrona feature sharing
     # will continue to work.
     from django.contrib.auth.models import Group
-    from registry import enable_sharing
+    from features.registry import enable_sharing
     name = mg.permission_group_name()
     pg = Group.objects.create(name=name)
     enable_sharing(pg)

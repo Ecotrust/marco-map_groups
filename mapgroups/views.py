@@ -1,14 +1,14 @@
 from django.contrib.auth.decorators import login_required
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse, reverse_lazy
 from django.http.response import HttpResponse, HttpResponseRedirect
 from django.utils.decorators import method_decorator
-from django.views.generic import View
+from django.views.generic import View, FormView
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import CreateView, ModelFormMixin
 from django.views.generic.list import ListView
 
-from mapgroups.actions import create_map_group
-from mapgroups.forms import CreateGroupForm
+from mapgroups.actions import create_map_group, join_map_group
+from mapgroups.forms import CreateGroupForm, JoinMapGroupActionForm
 from mapgroups.models import MapGroup
 
 def decorate_view(fn):
@@ -50,6 +50,8 @@ class MapGroupDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super(MapGroupDetailView, self).get_context_data(**kwargs)
         context['title'] = self.object.name
+
+        context['user_is_member'] = self.object.has_member(self.request.user)
         return context
 
 
@@ -58,3 +60,22 @@ class MapGroupListView(ListView):
     context_object_name ='mapgroups'
 
 
+@decorate_view(login_required)
+class JoinMapGroupActionView(FormView):
+    template_name = None
+    form_class = JoinMapGroupActionForm
+
+    def post(self, request, *args, **kwargs):
+        # can't define the success_url on the class, since we don't know which
+        # mapgroup it is until the post
+        self.mapgroup = MapGroup.objects.get(pk=kwargs['pk'])
+        self.success_url = reverse('mapgroups:detail', kwargs=kwargs)
+        return super(JoinMapGroupActionView, self).post(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        member = join_map_group(self.request.user, self.mapgroup)
+        if not member:
+            # then it's a closed group and we need an invite
+            pass
+
+        return super(JoinMapGroupActionView, self).form_valid(form)

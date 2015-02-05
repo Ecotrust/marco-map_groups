@@ -207,6 +207,34 @@ class JoinMapGroupTest(TestCase):
         self.assertFalse(new)
 
 
+class JoinMapGroupActionViewTest(TestCase):
+    def setUp(self):
+        self.users = create_users()
+        open_group, _ = create_map_group('Salmon swiftly swam',
+                                         self.users['usr1'],
+                                         open=True)
+        self.open_group = open_group
+        closed_group, _ = create_map_group('Gulls gently glide',
+                                           self.users['usr2'], open=False)
+        self.closed_group = closed_group
+
+    def test_join_open_group_anon(self):
+        c = Client()
+        openg_url = reverse('mapgroups:join', args=(self.open_group.pk,
+                                                    self.open_group.slug))
+        resp = c.post(openg_url, {})
+        self.assertEqual(resp.status_code, 302) # redirect to login
+
+    def test_join_open_group(self):
+        c = Client()
+        c.login(username=self.users['usr2'].username, password='abc')
+        openg_url = reverse('mapgroups:join', args=(self.open_group.pk,
+                                                    self.open_group.slug))
+        resp = c.post(openg_url, {}, follow=True)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(self.open_group.has_member(self.users['usr2']))
+
+
 class InviteUserToGroupTest(TestCase):
     """Group manager invites someone via email to join a group.
     """

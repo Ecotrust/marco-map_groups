@@ -29,7 +29,7 @@ class MapGroup(models.Model):
     def has_member(self, user):
         """@type user User
         """
-        if user.is_anonymous() or not user.is_active():
+        if user.is_anonymous() or not user.is_active:
             return False
         return self.mapgroupmember_set.filter(user=user).exists()
 
