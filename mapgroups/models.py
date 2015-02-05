@@ -27,6 +27,10 @@ class MapGroup(models.Model):
                                                     'slug': self.slug})
 
     def has_member(self, user):
+        """@type user User
+        """
+        if user.is_anonymous() or not user.is_active():
+            return False
         return self.mapgroupmember_set.filter(user=user).exists()
 
     def permission_group_name(self):

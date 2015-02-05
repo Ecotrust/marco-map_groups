@@ -1,3 +1,4 @@
+from django.contrib import auth
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User, Group
 from django.test import TestCase
@@ -30,15 +31,20 @@ def create_users():
 class MapGroupTest(TestCase):
     def setUp(self):
         self.users = create_users()
+        self.mg = MapGroup(name='Swans swiftly swim', blurb='Fluttering Feathers',
+                           owner=self.users['usr1'])
+        self.mg.save()
 
     def test_get_absolute_url(self):
-        mg = MapGroup(name='Swans swiftly swim', blurb='Fluttering Feathers',
-                      owner=self.users['usr1'])
-        mg.save()
-        url = mg.get_absolute_url()
+        url = self.mg.get_absolute_url()
         self.assertEqual(url, reverse(MAPGROUP_DETAIL_URL,
-                                      args=(mg.id, mg.slug)))
-        mg.delete()
+                                      args=(self.mg.id, self.mg.slug)))
+
+    def test_map_group_has_anonymous_member(self):
+        c = Client()
+        anon = auth.get_user(c)
+        self.assertTrue(anon.is_anonymous())
+        self.assertFalse(self.mg.has_member(anon))
 
 
 class CreateMapGroupTest(TestCase):
