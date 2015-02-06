@@ -21,3 +21,9 @@ class CreateGroupForm(DivForm):
     blurb = forms.CharField(max_length=512)
     is_open = forms.BooleanField()
 
+
+class JoinMapGroupActionForm(DivForm):
+    pass
+
+class RequestJoinMapGroupActionForm(DivForm):
+    message = forms.CharField()

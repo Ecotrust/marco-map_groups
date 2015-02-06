@@ -1,12 +1,14 @@
 from django.contrib import auth
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User, Group
+from django.db import IntegrityError
 from django.test import TestCase
 from django.test.client import Client
 
 from mapgroups.actions import create_map_group, join_map_group, \
     request_map_group_invitation
-from mapgroups.models import MapGroup, MapGroupMember, ActivityLog, Invitation
+from mapgroups.models import MapGroup, MapGroupMember, ActivityLog, Invitation, \
+    FeaturedGroups
 
 
 MAPGROUP_CREATE_URL = 'mapgroups:create'
@@ -45,6 +47,35 @@ class MapGroupTest(TestCase):
         anon = auth.get_user(c)
         self.assertTrue(anon.is_anonymous())
         self.assertFalse(self.mg.has_member(anon))
+
+
+class FeaturedMapGroupTest(TestCase):
+    def setUp(self):
+        self.users = create_users()
+        self.mg1 = MapGroup(name='Swans swiftly swim', blurb='Fluttering Feathers',
+                            owner=self.users['usr1'])
+        self.mg1.save()
+
+        self.mg2 = MapGroup(name='Octopus Openly Outrageous', blurb='Somany Suckers',
+                            owner=self.users['usr2'])
+        self.mg2.save()
+        self.mg2.featuredgroups_set.create(rank=1)
+
+    def test_managers(self):
+        self.assertEqual(MapGroup.objects.all().count(), 1)
+        self.assertEqual(MapGroup.featured.all().count(), 1)
+
+    def test_rank_unique(self):
+        def c():
+            self.mg1.featuredgroups_set.create(rank=1)
+
+        self.assertRaises(IntegrityError, c)
+
+    def test_fk_unique(self):
+        def c():
+            FeaturedGroups.objects.create(rank=13, map_group=self.mg2)
+
+        self.assertRaises(IntegrityError, c)
 
 
 class CreateMapGroupTest(TestCase):

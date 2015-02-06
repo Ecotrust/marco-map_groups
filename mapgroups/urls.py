@@ -27,7 +27,8 @@ Usage:
 
 from django.conf.urls import url, include
 from mapgroups.views import MapGroupDetailView, \
-    MapGroupCreate, MapGroupListView, JoinMapGroupActionView
+    MapGroupCreate, MapGroupListView, JoinMapGroupActionView, \
+    RequestJoinMapGroupActionView
 
 _urlpatterns = [
     # Map group urls look something like:
@@ -42,6 +43,8 @@ _urlpatterns = [
         MapGroupDetailView.as_view(), name='detail'),
     url(r'^(?P<pk>\d+)/(?P<slug>[\w-]+)/join$',
         JoinMapGroupActionView.as_view(), name='join'),
+    url(r'^(?P<pk>\d+)/(?P<slug>[\w-]+)/join$',
+        RequestJoinMapGroupActionView.as_view(), name='request-join'),
 ]
 
 def urls(namespace='mapgroups'):
