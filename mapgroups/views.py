@@ -8,7 +8,8 @@ from django.views.generic.edit import CreateView, ModelFormMixin
 from django.views.generic.list import ListView
 
 from mapgroups.actions import create_map_group, join_map_group
-from mapgroups.forms import CreateGroupForm, JoinMapGroupActionForm
+from mapgroups.forms import CreateGroupForm, JoinMapGroupActionForm, \
+    RequestJoinMapGroupActionForm
 from mapgroups.models import MapGroup
 
 def decorate_view(fn):
@@ -33,11 +34,12 @@ def decorate_view(fn):
 @decorate_view(login_required)
 class MapGroupCreate(CreateView):
     model = MapGroup
-    fields = ['name', 'blurb']
+    fields = ['name', 'blurb', 'is_open']
 
     def form_valid(self, form):
         mg, member = create_map_group(name=form.cleaned_data['name'],
                                       blurb=form.cleaned_data['blurb'],
+                                      open=form.cleaned_data['is_open'],
                                       owner=self.request.user)
         self.object = mg
         return super(ModelFormMixin, self).form_valid(form)
@@ -79,3 +81,23 @@ class JoinMapGroupActionView(FormView):
             pass
 
         return super(JoinMapGroupActionView, self).form_valid(form)
+
+@decorate_view(login_required)
+class RequestJoinMapGroupActionView(FormView):
+    """Process a join request for a closed group.
+    """
+    template_name = None
+    form_class = RequestJoinMapGroupActionForm
+
+    def post(self, request, *args, **kwargs):
+        self.mapgroup = MapGroup.objects.get(pk=kwargs['pk'])
+        self.success_url = reverse('mapgroups:detail', kwargs=kwargs)
+        return super(RequestJoinMapGroupActionView, self).post(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        member = join_map_group(self.request.user, self.mapgroup)
+        if not member:
+            # then it's a closed group and we need an invite
+            pass
+
+        return super(RequestJoinMapGroupActionView, self).form_valid(form)
