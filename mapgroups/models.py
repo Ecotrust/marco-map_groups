@@ -3,6 +3,19 @@ from django.db import models
 from django.core.urlresolvers import reverse
 from django.utils.text import slugify
 
+class MapGroupManager(models.Manager):
+    def get_queryset(self):
+        qs = super(MapGroupManager, self).get_queryset()
+        qs = qs.filter(featuredgroups__isnull=True)
+        return qs
+
+
+class MapGroupFeaturedManager(models.Manager):
+    def get_queryset(self):
+        qs = super(MapGroupFeaturedManager, self).get_queryset()
+        qs = qs.filter(featuredgroups__isnull=False)
+        return qs
+
 
 class MapGroup(models.Model):
     name = models.CharField(max_length=255)
@@ -14,6 +27,9 @@ class MapGroup(models.Model):
     
     is_open = models.BooleanField(default=False, help_text=("If false, users "
         "must be invited or request to to join this group"))
+
+    objects = MapGroupManager()
+    featured = MapGroupFeaturedManager()
 
     def __str__(self):
         return "Map Group '%s'" % self.name
@@ -56,8 +72,13 @@ class MapGroupMember(models.Model):
     show_real_name = models.BooleanField(default=False)
 
 
+class FeaturedGroupsManager(models.Manager):
+    def get_queryset(self):
+        return super(FeaturedGroupsManager, self).get_queryset().order_by('rank')
+
+
 class FeaturedGroups(models.Model):
-    rank = models.PositiveIntegerField()
+    rank = models.PositiveIntegerField(unique=True)
     map_group = models.ForeignKey(MapGroup)
 
 
