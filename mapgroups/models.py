@@ -28,7 +28,8 @@ class MapGroup(models.Model):
     is_open = models.BooleanField(default=False, help_text=("If false, users "
         "must be invited or request to to join this group"))
 
-    objects = MapGroupManager()
+    objects = models.Manager()
+    not_featured = MapGroupManager()
     featured = MapGroupFeaturedManager()
 
     def __str__(self):
@@ -79,7 +80,16 @@ class FeaturedGroupsManager(models.Manager):
 
 class FeaturedGroups(models.Model):
     rank = models.PositiveIntegerField(unique=True)
-    map_group = models.ForeignKey(MapGroup)
+    # Note: unique FK here rather than 1:1, since the interface is a little
+    # nicer in this case. You can say:
+    # >>> mapgroup.featuredgroups_set.create(rank=4)
+    # instead of:
+    # >>> fg = FeaturedGroup.create(rank=4)
+    # >>> mapgroup.featuredgroup = fg
+    map_group = models.ForeignKey(MapGroup, unique=True)
+
+    def __str__(self):
+        return "#%d %s" % (self.rank, self.map_group.name)
 
 
 class RecentActivityManager(models.Manager):

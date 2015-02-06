@@ -10,7 +10,8 @@ from django.views.generic.list import ListView
 from mapgroups.actions import create_map_group, join_map_group
 from mapgroups.forms import CreateGroupForm, JoinMapGroupActionForm, \
     RequestJoinMapGroupActionForm
-from mapgroups.models import MapGroup
+from mapgroups.models import MapGroup, FeaturedGroups
+
 
 def decorate_view(fn):
     """Decorate a django view class with the specified view decorator.
@@ -59,7 +60,12 @@ class MapGroupDetailView(DetailView):
 
 class MapGroupListView(ListView):
     model = MapGroup
-    context_object_name ='mapgroups'
+
+    def get_context_data(self, **kwargs):
+        context = super(MapGroupListView, self).get_context_data(**kwargs)
+        context['featured_mapgroups'] = FeaturedGroups.objects.all()
+        context['mapgroups'] = MapGroup.not_featured.all()
+        return context
 
 
 @decorate_view(login_required)
@@ -81,6 +87,7 @@ class JoinMapGroupActionView(FormView):
             pass
 
         return super(JoinMapGroupActionView, self).form_valid(form)
+
 
 @decorate_view(login_required)
 class RequestJoinMapGroupActionView(FormView):
