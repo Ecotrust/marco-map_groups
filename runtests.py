@@ -19,6 +19,7 @@ if __name__ == '__main__':
     for test_name in sys.argv[1:]:
         tests_to_run.append('tests.tests.' + test_name)
 
+    # If no tests are specified explicitly, then all are run.
     failures = test_runner.run_tests(tests_to_run)
 
     sys.exit(bool(failures))

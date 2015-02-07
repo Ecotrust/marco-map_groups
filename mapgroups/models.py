@@ -3,6 +3,19 @@ from django.db import models
 from django.core.urlresolvers import reverse
 from django.utils.text import slugify
 
+class MapGroupManager(models.Manager):
+    def get_queryset(self):
+        qs = super(MapGroupManager, self).get_queryset()
+        qs = qs.filter(featuredgroups__isnull=True)
+        return qs
+
+
+class MapGroupFeaturedManager(models.Manager):
+    def get_queryset(self):
+        qs = super(MapGroupFeaturedManager, self).get_queryset()
+        qs = qs.filter(featuredgroups__isnull=False)
+        return qs
+
 
 class MapGroup(models.Model):
     name = models.CharField(max_length=255)
@@ -14,6 +27,10 @@ class MapGroup(models.Model):
     
     is_open = models.BooleanField(default=False, help_text=("If false, users "
         "must be invited or request to to join this group"))
+
+    objects = models.Manager()
+    not_featured = MapGroupManager()
+    featured = MapGroupFeaturedManager()
 
     def __str__(self):
         return "Map Group '%s'" % self.name
@@ -27,7 +44,16 @@ class MapGroup(models.Model):
                                                     'slug': self.slug})
 
     def has_member(self, user):
+        """@type user User
+        """
+        if user.is_anonymous() or not user.is_active:
+            return False
         return self.mapgroupmember_set.filter(user=user).exists()
+
+    def permission_group_name(self):
+        if not self.pk:
+            raise Exception("Save the model before accessing the perm group name.")
+        return '%s-%s' % (self.slug, self.pk)
 
 
 class MapGroupMember(models.Model):
@@ -47,9 +73,23 @@ class MapGroupMember(models.Model):
     show_real_name = models.BooleanField(default=False)
 
 
+class FeaturedGroupsManager(models.Manager):
+    def get_queryset(self):
+        return super(FeaturedGroupsManager, self).get_queryset().order_by('rank')
+
+
 class FeaturedGroups(models.Model):
-    rank = models.PositiveIntegerField()
-    map_group = models.ForeignKey(MapGroup)
+    rank = models.PositiveIntegerField(unique=True)
+    # Note: unique FK here rather than 1:1, since the interface is a little
+    # nicer in this case. You can say:
+    # >>> mapgroup.featuredgroups_set.create(rank=4)
+    # instead of:
+    # >>> fg = FeaturedGroup.create(rank=4)
+    # >>> mapgroup.featuredgroup = fg
+    map_group = models.ForeignKey(MapGroup, unique=True)
+
+    def __str__(self):
+        return "#%d %s" % (self.rank, self.map_group.name)
 
 
 class RecentActivityManager(models.Manager):

@@ -1,14 +1,19 @@
+from django.contrib import auth
 from django.core.urlresolvers import reverse
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
+from django.db import IntegrityError
 from django.test import TestCase
 from django.test.client import Client
 
 from mapgroups.actions import create_map_group, join_map_group, \
     request_map_group_invitation
-from mapgroups.models import MapGroup, MapGroupMember, ActivityLog, Invitation
+from mapgroups.models import MapGroup, MapGroupMember, ActivityLog, Invitation, \
+    FeaturedGroups
+
 
 MAPGROUP_CREATE_URL = 'mapgroups:create'
 MAPGROUP_DETAIL_URL = 'mapgroups:detail'
+
 
 def create_users():
     users = {
@@ -24,23 +29,59 @@ def create_users():
 
     return users
 
+
 class MapGroupTest(TestCase):
     def setUp(self):
         self.users = create_users()
+        self.mg = MapGroup(name='Swans swiftly swim', blurb='Fluttering Feathers',
+                           owner=self.users['usr1'])
+        self.mg.save()
 
     def test_get_absolute_url(self):
-        mg = MapGroup(name='Swans swiftly swim', blurb='Fluttering Feathers',
-                      owner=self.users['usr1'])
-        mg.save()
-        url = mg.get_absolute_url()
+        url = self.mg.get_absolute_url()
         self.assertEqual(url, reverse(MAPGROUP_DETAIL_URL,
-                                      args=(mg.id, mg.slug)))
-        mg.delete()
+                                      args=(self.mg.id, self.mg.slug)))
+
+    def test_map_group_has_anonymous_member(self):
+        c = Client()
+        anon = auth.get_user(c)
+        self.assertTrue(anon.is_anonymous())
+        self.assertFalse(self.mg.has_member(anon))
+
+
+class FeaturedMapGroupTest(TestCase):
+    def setUp(self):
+        self.users = create_users()
+        self.mg1 = MapGroup(name='Swans swiftly swim', blurb='Fluttering Feathers',
+                            owner=self.users['usr1'])
+        self.mg1.save()
+
+        self.mg2 = MapGroup(name='Octopus Openly Outrageous', blurb='Somany Suckers',
+                            owner=self.users['usr2'])
+        self.mg2.save()
+        self.mg2.featuredgroups_set.create(rank=1)
+
+    def test_managers(self):
+        self.assertEqual(MapGroup.objects.all().count(), 1)
+        self.assertEqual(MapGroup.featured.all().count(), 1)
+
+    def test_rank_unique(self):
+        def c():
+            self.mg1.featuredgroups_set.create(rank=1)
+
+        self.assertRaises(IntegrityError, c)
+
+    def test_fk_unique(self):
+        def c():
+            FeaturedGroups.objects.create(rank=13, map_group=self.mg2)
+
+        self.assertRaises(IntegrityError, c)
 
 
 class CreateMapGroupTest(TestCase):
     """User creates a map group.
     """
+
     def setUp(self):
         self.users = create_users()
         self.mg, self.member = create_map_group("Turtles Travel Together",
@@ -66,6 +107,14 @@ class CreateMapGroupTest(TestCase):
         self.assertEqual(manager.map_group, mg)
         self.assertTrue(manager.is_manager)
 
+    def test_group_created_permission_group(self):
+        self.assertTrue(
+            Group.objects.filter(name=self.mg.permission_group_name()).exists())
+
+    def test_group_owner_in_permission_group(self):
+        pgname = self.mg.permission_group_name()
+        self.assertTrue(self.mg.owner.groups.filter(name=pgname).exists())
+
     def tearDown(self):
         for user in self.users.values():
             user.delete()
@@ -76,6 +125,7 @@ class CreateMapGroupTest(TestCase):
 class CreateMapGroupViewTest(TestCase):
     """Test the form view
     """
+
     def setUp(self):
         self.users = create_users()
 
@@ -109,7 +159,6 @@ class CreateMapGroupViewTest(TestCase):
         self.assertEqual(resp.status_code, 302)
 
 
-
     def test_create_group_unauth(self):
         c = Client()
 
@@ -130,13 +179,15 @@ class MapGroupDetailTest(TestCase):
 class MapGroupListTest(TestCase):
     pass
 
+
 class JoinMapGroupTest(TestCase):
     """User joins a map group.
     """
 
     def setUp(self):
         self.users = create_users()
-        open_group, _ = create_map_group('Salmon swiftly swam', self.users['usr1'],
+        open_group, _ = create_map_group('Salmon swiftly swam',
+                                         self.users['usr1'],
                                          open=True)
         self.open_group = open_group
         closed_group, _ = create_map_group('Gulls gently glide',
@@ -185,6 +236,34 @@ class JoinMapGroupTest(TestCase):
                                                    self.closed_group)
         self.assertIsNone(invite)
         self.assertFalse(new)
+
+
+class JoinMapGroupActionViewTest(TestCase):
+    def setUp(self):
+        self.users = create_users()
+        open_group, _ = create_map_group('Salmon swiftly swam',
+                                         self.users['usr1'],
+                                         open=True)
+        self.open_group = open_group
+        closed_group, _ = create_map_group('Gulls gently glide',
+                                           self.users['usr2'], open=False)
+        self.closed_group = closed_group
+
+    def test_join_open_group_anon(self):
+        c = Client()
+        openg_url = reverse('mapgroups:join', args=(self.open_group.pk,
+                                                    self.open_group.slug))
+        resp = c.post(openg_url, {})
+        self.assertEqual(resp.status_code, 302) # redirect to login
+
+    def test_join_open_group(self):
+        c = Client()
+        c.login(username=self.users['usr2'].username, password='abc')
+        openg_url = reverse('mapgroups:join', args=(self.open_group.pk,
+                                                    self.open_group.slug))
+        resp = c.post(openg_url, {}, follow=True)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(self.open_group.has_member(self.users['usr2']))
 
 
 class InviteUserToGroupTest(TestCase):

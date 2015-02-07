@@ -1,9 +1,57 @@
 {% extends "base.html" %}
 
 {% block content %}
+<h2>{{ mapgroup.blurb }} </h2>
+<a href="{% url 'mapgroups:list' %}">&larr; Back to group list</a>
 
-<a href="{% url 'mapgroups:list' %}">Back to list</a>
+<hr>
 
-<h2> {{ mapgroup.blurb }} </h2>
+<p>Owned by: {{ mapgroup.owner }}</p>
+
+
+<hr>
+{% if user_is_member %}
+You are a member of this group. <button disabled>Leave group</button>
+{% else %}
+<h3>Join this Group</h3>
+
+You are NOT a member of this group.
+
+{% if mapgroup.is_open %}
+(open)
+<form method="POST" action="{% url 'mapgroups:join' mapgroup.pk mapgroup.slug %}">
+    {% csrf_token %}
+    <input type="submit" value="Click this button">
+</form>
+{% else %}
+(closed)
+<form method="POST" action="{% url 'mapgroups:request-join' mapgroup.pk mapgroup.slug %}">
+    {% csrf_token %}
+    <input type="submit" value="Click this button">
+</form>
+{% endif %}
+{% endif %}
+
+<hr>
+
+<p>Members:</p>
+<ol>
+    {% for member in mapgroup.mapgroupmember_set.all %}
+    <li>
+        <img src="{{ member.user.userdata.profile_image }}" width="32" height="32" />
+        {% if member.show_real_name %}
+            <b>{{ member.user.name }}</b> (Show real name)
+        {% else %}
+            Don't show real name
+            <b>{{ member.user.username }}</b>
+        {% endif %}
+
+        {% if member.user == mapgroup.owner %}
+            (owner)
+        {% endif %}
+    </li>
+    {% endfor %}
+</ol>
+
 
 {% endblock %}
