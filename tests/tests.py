@@ -62,7 +62,8 @@ class FeaturedMapGroupTest(TestCase):
         self.mg2.featuredgroups_set.create(rank=1)
 
     def test_managers(self):
-        self.assertEqual(MapGroup.objects.all().count(), 1)
+        self.assertEqual(MapGroup.objects.all().count(), 2)
+        self.assertEqual(MapGroup.not_featured.all().count(), 1)
         self.assertEqual(MapGroup.featured.all().count(), 1)
 
     def test_rank_unique(self):
@@ -200,10 +201,21 @@ class JoinMapGroupTest(TestCase):
         result = join_map_group(self.users['usr1'], self.open_group)
         self.assertIsInstance(result, MapGroupMember)
 
+        # Make sure the user gets added to the permission group
+        pgroup_name = self.open_group.permission_group_name()
+        user_pgroup = self.users['usr1'].groups.filter(name=pgroup_name)
+        self.assertTrue(user_pgroup.exists())
+
         # If it's an open group, then joining will succeed
         result = join_map_group(self.users['usr2'], self.open_group)
         self.assertIsInstance(result, MapGroupMember)
         self.assertEqual(result.user, self.users['usr2'])
+
+        # Make sure the user gets added to the permission group
+        pgroup_name = self.open_group.permission_group_name()
+        user_pgroup = self.users['usr2'].groups.filter(name=pgroup_name)
+        self.assertTrue(user_pgroup.exists())
+
 
         log = ActivityLog.objects.filter(group=self.open_group, admin=True,
                                          associated_user=self.users['usr2'])
