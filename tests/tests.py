@@ -201,10 +201,21 @@ class JoinMapGroupTest(TestCase):
         result = join_map_group(self.users['usr1'], self.open_group)
         self.assertIsInstance(result, MapGroupMember)
 
+        # Make sure the user gets added to the permission group
+        pgroup_name = self.open_group.permission_group_name()
+        user_pgroup = self.users['usr1'].groups.filter(name=pgroup_name)
+        self.assertTrue(user_pgroup.exists())
+
         # If it's an open group, then joining will succeed
         result = join_map_group(self.users['usr2'], self.open_group)
         self.assertIsInstance(result, MapGroupMember)
         self.assertEqual(result.user, self.users['usr2'])
+
+        # Make sure the user gets added to the permission group
+        pgroup_name = self.open_group.permission_group_name()
+        user_pgroup = self.users['usr2'].groups.filter(name=pgroup_name)
+        self.assertTrue(user_pgroup.exists())
+
 
         log = ActivityLog.objects.filter(group=self.open_group, admin=True,
                                          associated_user=self.users['usr2'])
