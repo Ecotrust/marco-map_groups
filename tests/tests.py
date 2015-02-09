@@ -62,7 +62,8 @@ class FeaturedMapGroupTest(TestCase):
         self.mg2.featuredgroups_set.create(rank=1)
 
     def test_managers(self):
-        self.assertEqual(MapGroup.objects.all().count(), 1)
+        self.assertEqual(MapGroup.objects.all().count(), 2)
+        self.assertEqual(MapGroup.not_featured.all().count(), 1)
         self.assertEqual(MapGroup.featured.all().count(), 1)
 
     def test_rank_unique(self):
