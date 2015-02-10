@@ -40,10 +40,10 @@ You are NOT a member of this group.
     <li>
         <img src="{{ member.user.userdata.profile_image }}" width="32" height="32" />
         {% if member.show_real_name %}
-            <b>{{ member.user.name }}</b> (Show real name)
+            <b>{{ member.user.get_full_name }}</b> (Show real name)
         {% else %}
             Don't show real name
-            <b>{{ member.user.username }}</b>
+            <b>{{ member.user.get_short_name }}</b>
         {% endif %}
 
         {% if member.user == mapgroup.owner %}
