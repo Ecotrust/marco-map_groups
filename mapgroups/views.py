@@ -11,25 +11,7 @@ from mapgroups.actions import create_map_group, join_map_group
 from mapgroups.forms import CreateGroupForm, JoinMapGroupActionForm, \
     RequestJoinMapGroupActionForm
 from mapgroups.models import MapGroup, FeaturedGroups
-
-
-def decorate_view(fn):
-    """Decorate a django view class with the specified view decorator.
-
-    For example,
-        @decorate_view(login_required)
-        class SomeView(View):
-            pass
-
-    Django's prescribed method of creating a MixIn class doesn't seem to work
-    100% of the time, particularly with generic views.
-    (https://docs.djangoproject.com/en/1.7/topics/class-based-views/intro/#decorating-the-class)
-    """
-
-    def require(cls):
-        cls.dispatch = method_decorator(fn)(cls.dispatch)
-        return cls
-    return require
+from nursery.view_helpers import decorate_view
 
 
 @decorate_view(login_required)
