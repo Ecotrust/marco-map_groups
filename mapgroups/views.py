@@ -1,6 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.http.response import HttpResponse, HttpResponseRedirect
+from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.generic import View, FormView
 from django.views.generic.detail import DetailView
@@ -9,7 +10,7 @@ from django.views.generic.list import ListView
 
 from mapgroups.actions import create_map_group, join_map_group
 from mapgroups.forms import CreateGroupForm, JoinMapGroupActionForm, \
-    RequestJoinMapGroupActionForm
+    RequestJoinMapGroupActionForm, EditMapGroupForm
 from mapgroups.models import MapGroup, FeaturedGroups
 from nursery.view_helpers import decorate_view
 
@@ -90,3 +91,46 @@ class RequestJoinMapGroupActionView(FormView):
             pass
 
         return super(RequestJoinMapGroupActionView, self).form_valid(form)
+
+
+@decorate_view(login_required)
+class MapGroupEditView(FormView):
+    template_name = 'mapgroups/mapgroup_edit.html'
+    form_class = EditMapGroupForm
+
+    def get_initial(self):
+        """
+        Returns the initial data to use for forms on this view.
+        """
+        mg = get_object_or_404(MapGroup, owner=self.request.user, **self.kwargs)
+
+        return {
+            'name': mg.name,
+            'blurb': mg.blurb,
+            'is_open': mg.is_open,
+        }
+
+    def get_context_data(self, **kwargs):
+        mg = get_object_or_404(MapGroup, owner=self.request.user, **self.kwargs)
+        kwargs.update({'mapgroup': mg})
+        return kwargs
+
+    def get(self, request, *args, **kwargs):
+        mg = get_object_or_404(MapGroup, owner=self.request.user, **self.kwargs)
+        return super(MapGroupEditView, self).get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        mg = get_object_or_404(MapGroup, owner=self.request.user, **self.kwargs)
+        return super(MapGroupEditView, self).post(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        mg = get_object_or_404(MapGroup, owner=self.request.user, **self.kwargs)
+        self.success_url = mg.get_absolute_url()
+
+        mg.blurb = form.cleaned_data['blurb']
+        mg.is_open = form.cleaned_data['is_open']
+        mg.save()
+
+        mg.rename(form.cleaned_data['name'])
+
+        return super(FormView, self).form_valid(form)

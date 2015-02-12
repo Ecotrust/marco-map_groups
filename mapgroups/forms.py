@@ -19,11 +19,18 @@ class DivForm(forms.Form):
 class CreateGroupForm(DivForm):
     name = forms.CharField(max_length=255)
     blurb = forms.CharField(max_length=512)
-    is_open = forms.BooleanField()
+    is_open = forms.BooleanField(required=False)
+
+
+class EditMapGroupForm(CreateGroupForm):
+    """Form for editing group information.
+    Currently identical to the Create form.
+    """
 
 
 class JoinMapGroupActionForm(DivForm):
     pass
+
 
 class RequestJoinMapGroupActionForm(DivForm):
     message = forms.CharField()
