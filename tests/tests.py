@@ -123,6 +123,86 @@ class CreateMapGroupTest(TestCase):
         TestCase.tearDown(self)
 
 
+class EditMapGroupTest(TestCase):
+    """User creates a map group.
+    """
+
+    def setUp(self):
+        self.users = create_users()
+        self.mg, self.member = create_map_group("Turtles Travel Together",
+                                                self.users['usr1'],
+                                                blurb="<b>I like turtles</b>",
+                                                open=True)
+
+    def test_anonymous_users_cant_edit(self):
+        c = Client()
+        resp = c.get(reverse('mapgroups:edit', kwargs={'pk': self.mg.pk,
+                                                       'slug': self.mg.slug}))
+        self.assertEqual(resp.status_code, 302)
+
+    def test_non_owners_cant_edit(self):
+        c = Client()
+        self.assertTrue(c.login(username=self.users['usr2'].username,
+                                password='abc'))
+
+        resp = c.get(reverse('mapgroups:edit', kwargs={'pk': self.mg.pk,
+                                                       'slug': self.mg.slug}))
+        self.assertEqual(resp.status_code, 404)
+
+    def test_owner_can_edit(self):
+        c = Client()
+        self.assertTrue(c.login(username=self.users['usr1'].username,
+                                password='abc'))
+
+        resp = c.get(reverse('mapgroups:edit', kwargs={'pk': self.mg.pk,
+                                                       'slug': self.mg.slug}))
+        self.assertEqual(resp.status_code, 200)
+
+    def test_edit(self):
+        c = Client()
+        self.assertTrue(c.login(username=self.users['usr1'].username,
+                                password='abc'))
+
+        # add some members to test renaming
+        join_map_group(self.users['usr2'], self.mg)
+        join_map_group(self.users['usr3'], self.mg)
+        self.assertTrue(self.users['usr2'].groups.filter(name=self.mg.permission_group_name()).exists())
+        self.assertTrue(self.users['usr3'].groups.filter(name=self.mg.permission_group_name()).exists())
+
+        data = {
+            'name': 'Tarantula Tuesdays',
+            'blurb': "It's totally not creepy",
+            'is_open': False, # you must be *invited* to tarantula tuesdays
+        }
+
+        url = reverse('mapgroups:edit', kwargs={'pk': self.mg.pk,
+                                                'slug': self.mg.slug})
+        resp = c.post(url, data)
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp.status_code, 302)
+
+        mg = MapGroup.objects.get(pk=self.mg.pk)
+        self.assertEqual(mg.name, data['name'])
+        self.assertEqual(mg.blurb, data['blurb'])
+        self.assertEqual(mg.is_open, data['is_open'])
+        self.assertEqual(mg.owner, self.users['usr1'])
+
+        old_pg = Group.objects.filter(name=self.mg.permission_group_name())
+        self.assertFalse(old_pg.exists(), "Old permission group wasn't deleted")
+        pg = Group.objects.filter(name=mg.permission_group_name())
+        self.assertTrue(pg.exists(), "New permission group doesn't exist")
+
+        self.assertTrue(mg.owner.groups.filter(name=mg.permission_group_name()).exists())
+        self.assertTrue(self.users['usr2'].groups.filter(name=mg.permission_group_name()).exists())
+        self.assertTrue(self.users['usr3'].groups.filter(name=mg.permission_group_name()).exists())
+
+    def tearDown(self):
+        for user in self.users.values():
+            user.delete()
+
+        TestCase.tearDown(self)
+
+
 class CreateMapGroupViewTest(TestCase):
     """Test the form view
     """
