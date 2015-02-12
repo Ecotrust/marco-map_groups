@@ -43,24 +43,13 @@ class MapGroup(models.Model):
         return super(MapGroup, self).save(*args, **kwargs)
 
     def rename(self, new_name):
-        """Renaming a mapgroup is fairly complex.
-        1. Delete the old permission group
-        2. Set the new name, and save
-        3. Create a new permission group
-        4. Enable sharing on the new group
-        5. Add all members of the group to the new permission group
+        """Rename the mapgroup and it's associated permission group.
         """
-
         old_pg = get_object_or_404(Group, name=self.permission_group_name())
-        old_pg.delete()
         self.name = new_name
         self.save()
-        new_pg = Group.objects.create(name=self.permission_group_name())
-        new_pg.save()
-        enable_sharing(new_pg)
-        self.owner.groups.add(new_pg)
-        for member in self.mapgroupmember_set.all():
-            member.user.groups.add(new_pg)
+        old_pg.name = self.permission_group_name()
+        old_pg.save()
 
     def get_absolute_url(self):
         return reverse('mapgroups:detail', kwargs={'pk': self.pk,
