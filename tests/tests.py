@@ -48,6 +48,11 @@ class MapGroupTest(TestCase):
         self.assertTrue(anon.is_anonymous())
         self.assertFalse(self.mg.has_member(anon))
 
+    def test_get_permission_group(self):
+        g = Group.objects.filter(name=self.mg.permission_group_name())
+        self.assertTrue(g.exists())
+        g2 = self.mg.get_permission_group()
+        self.assertEqual(g.pk, g2.pk)
 
 class FeaturedMapGroupTest(TestCase):
     def setUp(self):
@@ -372,3 +377,10 @@ class GroupLogTest(TestCase):
     """Make sure the activity log works.
     """
 
+
+class MapGroupMemberTest(TestCase):
+    def setUp(self):
+        pass
+
+    def test_user_name_for_group(self):
+        self.fail('Make sure this shows the correct username per group setting.')
