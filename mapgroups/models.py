@@ -3,8 +3,6 @@ from django.db import models
 from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404
 from django.utils.text import slugify
-from registry import enable_sharing
-
 
 class MapGroupManager(models.Manager):
     def get_queryset(self):
