@@ -10,8 +10,8 @@ from django.views.generic.list import ListView
 
 from mapgroups.actions import create_map_group, join_map_group
 from mapgroups.forms import CreateGroupForm, JoinMapGroupActionForm, \
-    RequestJoinMapGroupActionForm, EditMapGroupForm
-from mapgroups.models import MapGroup, FeaturedGroups
+    RequestJoinMapGroupActionForm, EditMapGroupForm, ShowMyRealNameForm
+from mapgroups.models import MapGroup, FeaturedGroups, MapGroupMember
 from nursery.view_helpers import decorate_view
 
 
@@ -70,6 +70,26 @@ class JoinMapGroupActionView(FormView):
             pass
 
         return super(JoinMapGroupActionView, self).form_valid(form)
+
+
+@decorate_view(login_required)
+class ShowMyRealNameFormView(FormView):
+    template_name = None
+    form_class = ShowMyRealNameForm
+
+    def post(self, request, *args, **kwargs):
+        # can't define the success_url on the class, since we don't know which
+        # mapgroup it is until the post
+        self.mapgroup = MapGroup.objects.get(pk=kwargs['pk'])
+        self.success_url = reverse('mapgroups:detail', kwargs=kwargs)
+        return super(ShowMyRealNameFormView, self).post(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        member = get_object_or_404(MapGroupMember, user=self.request.user,
+                                   map_group=self.mapgroup)
+        member.show_real_name = form.cleaned_data['show_real_name']
+
+        return super(ShowMyRealNameFormView, self).form_valid(form)
 
 
 @decorate_view(login_required)
