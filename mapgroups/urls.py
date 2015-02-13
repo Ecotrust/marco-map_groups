@@ -26,6 +26,7 @@ Usage:
 """
 
 from django.conf.urls import url, include
+from mapgroups import rpc
 from mapgroups.views import MapGroupDetailView, \
     MapGroupCreate, MapGroupListView, JoinMapGroupActionView, \
     RequestJoinMapGroupActionView, MapGroupEditView
@@ -47,6 +48,8 @@ _urlpatterns = [
         JoinMapGroupActionView.as_view(), name='join'),
     url(r'^(?P<pk>\d+)/(?P<slug>[\w-]+)/join$',
         RequestJoinMapGroupActionView.as_view(), name='request-join'),
+
+    url(r'^rpc/', include(rpc.urls, namespace='rpc')),
 ]
 
 def urls(namespace='mapgroups'):
