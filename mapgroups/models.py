@@ -27,7 +27,7 @@ class MapGroup(models.Model):
     blurb = models.CharField(max_length=512)    # how long?
     
     is_open = models.BooleanField(default=False, help_text=("If false, users "
-        "must be invited or request to to join this group"))
+        "must be invited or request to join this group"))
 
     objects = models.Manager()
     not_featured = MapGroupManager()
@@ -72,6 +72,9 @@ class MapGroup(models.Model):
         return Group.objects.get(name=self.permission_group_name())
 
 class MapGroupMember(models.Model):
+    class Meta:
+        unique_together = (('user', 'map_group',),)
+
     user = models.ForeignKey(User)
     map_group = models.ForeignKey(MapGroup)
 
@@ -88,7 +91,7 @@ class MapGroupMember(models.Model):
     show_real_name = models.BooleanField(default=False)
 
     def __str__(self):
-        return ""
+        return "%s's Membership card for %s" % (self.user.first_name, self.map_group.name)
 
     def user_name_for_group(self):
         """Return the user's name as it should appear in this group.
