@@ -1,6 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse, reverse_lazy
-from django.http.response import HttpResponse, HttpResponseRedirect
+from django.http.response import HttpResponse, HttpResponseRedirect, \
+    HttpResponseNotFound
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.generic import View, FormView
@@ -10,7 +11,7 @@ from django.views.generic.list import ListView
 
 from mapgroups.actions import create_map_group, join_map_group
 from mapgroups.forms import CreateGroupForm, JoinMapGroupActionForm, \
-    RequestJoinMapGroupActionForm, EditMapGroupForm
+    RequestJoinMapGroupActionForm, EditMapGroupForm, MapGroupPreferencesForm
 from mapgroups.models import MapGroup, FeaturedGroups
 from nursery.view_helpers import decorate_view
 
@@ -38,6 +39,15 @@ class MapGroupDetailView(DetailView):
         context['title'] = self.object.name
 
         context['user_is_member'] = self.object.has_member(self.request.user)
+        context['membership'] = self.object.get_member(self.request.user)
+        if context['membership']:
+            show_real_name = context['membership'].show_real_name
+        else:
+            show_real_name = None
+
+        context['preferences_form'] = MapGroupPreferencesForm({
+            'show_real_name': show_real_name
+        })
         return context
 
 
@@ -134,3 +144,27 @@ class MapGroupEditView(FormView):
         mg.rename(form.cleaned_data['name'])
 
         return super(FormView, self).form_valid(form)
+
+
+@decorate_view(login_required)
+class MapGroupPreferencesView(FormView):
+    template_name = None
+    form_class = MapGroupPreferencesForm
+
+    def post(self, request, *args, **kwargs):
+        # can't define the success_url on the class, since we don't know which
+        # mapgroup it is until the post
+        self.mapgroup = MapGroup.objects.get(pk=kwargs['pk'])
+        self.member = self.mapgroup.get_member(self.request.user)
+        if not self.member:
+            return HttpResponseNotFound()
+
+        self.success_url = reverse('mapgroups:detail', kwargs=kwargs)
+        return super(MapGroupPreferencesView, self).post(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        self.member.show_real_name = form.cleaned_data['show_real_name']
+        self.member.save()
+
+        return super(MapGroupPreferencesView, self).form_valid(form)
+

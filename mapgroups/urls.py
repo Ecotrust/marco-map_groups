@@ -29,7 +29,7 @@ from django.conf.urls import url, include
 from mapgroups import rpc
 from mapgroups.views import MapGroupDetailView, \
     MapGroupCreate, MapGroupListView, JoinMapGroupActionView, \
-    RequestJoinMapGroupActionView, MapGroupEditView
+    RequestJoinMapGroupActionView, MapGroupEditView, MapGroupPreferencesView
 
 _urlpatterns = [
     # Map group urls look something like:
@@ -44,6 +44,8 @@ _urlpatterns = [
         MapGroupEditView.as_view(), name='edit'),
     url(r'^(?P<pk>\d+)/(?P<slug>[\w-]+)/$',
         MapGroupDetailView.as_view(), name='detail'),
+    url(r'^(?P<pk>\d+)/(?P<slug>[\w-]+)/preferences$',
+        MapGroupPreferencesView.as_view(), name='preferences'),
     url(r'^(?P<pk>\d+)/(?P<slug>[\w-]+)/join$',
         JoinMapGroupActionView.as_view(), name='join'),
     url(r'^(?P<pk>\d+)/(?P<slug>[\w-]+)/join$',

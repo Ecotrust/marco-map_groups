@@ -32,5 +32,9 @@ class JoinMapGroupActionForm(DivForm):
     pass
 
 
+class MapGroupPreferencesForm(DivForm):
+    show_real_name = forms.BooleanField(required=False)
+
+
 class RequestJoinMapGroupActionForm(DivForm):
     message = forms.CharField()
