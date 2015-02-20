@@ -51,11 +51,12 @@ You are NOT a member of this group.
     {% for member in mapgroup.mapgroupmember_set.all %}
     <li>
         <img src="{{ member.user.userdata.profile_image }}" width="32" height="32" />
-        {% if member.show_real_name %}
-            <b>{{ member.user.get_full_name }}</b> (Show real name)
+
+        {% if membership and member.show_real_name %}
+            <b>{{ member.user.get_full_name }}</b> (Show real name) I={{ member.user.id }}
         {% else %}
             Don't show real name
-            <b>{{ member.user.get_short_name }}</b>
+            <b>{{ member.user.get_short_name }}</b> I={{ member.user.id }}
         {% endif %}
 
         {% if member.user == mapgroup.owner %}
