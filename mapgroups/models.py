@@ -27,7 +27,7 @@ class MapGroup(models.Model):
     blurb = models.CharField(max_length=512)    # how long?
     
     is_open = models.BooleanField(default=False, help_text=("If false, users "
-        "must be invited or request to to join this group"))
+        "must be invited or request to join this group"))
 
     objects = models.Manager()
     not_featured = MapGroupManager()
@@ -65,8 +65,16 @@ class MapGroup(models.Model):
             raise Exception("Save the model before accessing the perm group name.")
         return '%s-%s' % (self.slug, self.pk)
 
+    def get_permission_group(self):
+        """Returns the permission group associated with this map group.
+        Can raise a Group.DoesNotExist if something screwy happens.
+        """
+        return Group.objects.get(name=self.permission_group_name())
 
 class MapGroupMember(models.Model):
+    class Meta:
+        unique_together = (('user', 'map_group',),)
+
     user = models.ForeignKey(User)
     map_group = models.ForeignKey(MapGroup)
 
@@ -81,6 +89,17 @@ class MapGroupMember(models.Model):
 
     # user-group-specific preferences
     show_real_name = models.BooleanField(default=False)
+
+    def __str__(self):
+        return "%s's Membership card for %s" % (self.user.first_name, self.map_group.name)
+
+    def user_name_for_group(self):
+        """Return the user's name as it should appear in this group.
+        """
+        if self.show_real_name:
+            return self.user.get_full_name()
+        else:
+            return self.user.get_short_name()
 
 
 class FeaturedGroupsManager(models.Manager):
