@@ -40,8 +40,13 @@ class MapGroupDetailView(DetailView):
 
         context['user_is_member'] = self.object.has_member(self.request.user)
         context['membership'] = self.object.get_member(self.request.user)
+        if context['membership']:
+            show_real_name = context['membership'].show_real_name
+        else:
+            show_real_name = None
+
         context['preferences_form'] = MapGroupPreferencesForm({
-            'show_real_name': context['membership'].show_real_name
+            'show_real_name': show_real_name
         })
         return context
 
