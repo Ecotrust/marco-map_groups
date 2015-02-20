@@ -38,7 +38,7 @@
             <button onclick='javascript:this.form.submit()'>Finish &rarr;</button>
             <br />
             <br />
-            <a href="{% url 'account:index' %}">I changed my mind</a>
+            <a href="{% url 'mapgroups:detail' mapgroup.pk mapgroup.slug %}">I changed my mind</a>
             </form>
         </div>
         </form>

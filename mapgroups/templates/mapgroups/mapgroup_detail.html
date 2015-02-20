@@ -7,6 +7,14 @@
 <hr>
 
 <p>Owned by: {{ mapgroup.owner }}</p>
+<hr>
+
+{% if request.user == mapgroup.owner %}
+
+<a href="{% url 'mapgroups:edit' mapgroup.pk mapgroup.slug %}">Edit Map Group</a>
+
+{% endif %}
+
 
 
 <hr>
