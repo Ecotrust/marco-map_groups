@@ -11,10 +11,6 @@ from mapgroups.models import MapGroup, MapGroupMember, ActivityLog, Invitation, 
     FeaturedGroups
 
 
-MAPGROUP_CREATE_URL = 'mapgroups:create'
-MAPGROUP_DETAIL_URL = 'mapgroups:detail'
-
-
 def create_users():
     users = {
         'usr1': User.objects.create_user('usr1', email='usr1@example.com'),
@@ -39,7 +35,7 @@ class MapGroupTest(TestCase):
 
     def test_get_absolute_url(self):
         url = self.mg.get_absolute_url()
-        self.assertEqual(url, reverse(MAPGROUP_DETAIL_URL,
+        self.assertEqual(url, reverse('mapgroups:detail',
                                       args=(self.mg.id, self.mg.slug)))
 
     def test_map_group_has_anonymous_member(self):
@@ -203,6 +199,46 @@ class EditMapGroupTest(TestCase):
         TestCase.tearDown(self)
 
 
+class MapGroupPreferencesTest(TestCase):
+    def setUp(self):
+        self.users = create_users()
+        self.mg, self.member = create_map_group("Turtles Travel Together",
+                                                self.users['usr1'],
+                                                blurb="<b>I like turtles</b>",
+                                                open=True)
+
+    def test_post_redirects(self):
+        u = self.users['usr1']
+        c = Client()
+        self.assertTrue(c.login(username=u.username, password='abc'))
+        url = reverse('mapgroups:preferences', args=(self.mg.id, self.mg.slug))
+        detail_url = reverse('mapgroups:detail', args=(self.mg.id, self.mg.slug))
+
+        response = c.post(url, {'show_real_name': True})
+        self.assertRedirects(response, detail_url)
+
+    def test_form_sets_real_name(self):
+        u = self.users['usr1']
+        c = Client()
+        self.assertTrue(c.login(username=u.username, password='abc'))
+
+        url = reverse('mapgroups:preferences', args=(self.mg.id, self.mg.slug))
+        response = c.post(url, {'show_real_name': not self.member.show_real_name})
+
+        member = self.mg.get_member(self.users['usr1'])
+        self.assertNotEqual(member.show_real_name, self.member.show_real_name)
+
+    def test_non_member_cant_change_preferences(self):
+        # Anonymous users would be redirected to the login page
+        u = self.users['usr2']
+        c = Client()
+        self.assertTrue(c.login(username=u.username, password='abc'))
+
+        url = reverse('mapgroups:preferences', args=(self.mg.id, self.mg.slug))
+        response = c.post(url, {'show_real_name': True})
+        self.assertEqual(response.status_code, 404)
+
+
 class CreateMapGroupViewTest(TestCase):
     """Test the form view
     """
@@ -213,12 +249,12 @@ class CreateMapGroupViewTest(TestCase):
     def test_get(self):
         c = Client()
         c.login(username=self.users['usr1'].username, password='abc')
-        resp = c.get(reverse(MAPGROUP_CREATE_URL))
+        resp = c.get(reverse('mapgroups:create'))
         self.assertEqual(resp.status_code, 200)
 
     def test_get_unauth(self):
         c = Client()
-        resp = c.get(reverse(MAPGROUP_CREATE_URL))
+        resp = c.get(reverse('mapgroups:create'))
 
         # if this were being tested in the context of a full application,
         # we self.assertRedirects(expected_url=login_url, ...)
@@ -235,7 +271,7 @@ class CreateMapGroupViewTest(TestCase):
             'is_open': True,
         }
 
-        resp = c.post(reverse(MAPGROUP_CREATE_URL), post_data)
+        resp = c.post(reverse('mapgroups:create'), post_data)
         # Looking for assertRedirects to a particular MapGroup
         self.assertEqual(resp.status_code, 302)
 
@@ -249,7 +285,7 @@ class CreateMapGroupViewTest(TestCase):
             'is_open': True,
         }
 
-        resp = c.post(reverse(MAPGROUP_CREATE_URL), post_data)
+        resp = c.post(reverse('mapgroups:create'), post_data)
         self.assertEqual(resp.status_code, 302)
 
 

@@ -12,6 +12,18 @@
 <hr>
 {% if user_is_member %}
 You are a member of this group. <button disabled>Leave group</button>
+
+<form method="POST"
+      action="{% url 'mapgroups:preferences' mapgroup.pk mapgroup.slug %}">
+    {% csrf_token %}
+    {{ preferences_form.as_p }}
+    <script>
+        document.querySelector('#id_show_real_name').onclick = function() {
+            this.form.submit();
+        };
+    </script>
+</form>
+
 {% else %}
 <h3>Join this Group</h3>
 

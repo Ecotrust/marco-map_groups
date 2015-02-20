@@ -32,7 +32,7 @@ class JoinMapGroupActionForm(DivForm):
     pass
 
 
-class ShowMyRealNameForm(DivForm):
+class MapGroupPreferencesForm(DivForm):
     show_real_name = forms.BooleanField(required=False)
 
 

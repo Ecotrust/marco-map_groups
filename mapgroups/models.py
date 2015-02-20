@@ -60,6 +60,15 @@ class MapGroup(models.Model):
             return False
         return self.mapgroupmember_set.filter(user=user).exists()
 
+    def get_member(self, user):
+        if user.is_anonymous() or not user.is_active:
+            return None
+        try:
+            return self.mapgroupmember_set.get(user=user)
+        except MapGroupMember.DoesNotExist:
+            return None
+
+
     def permission_group_name(self):
         if not self.pk:
             raise Exception("Save the model before accessing the perm group name.")
