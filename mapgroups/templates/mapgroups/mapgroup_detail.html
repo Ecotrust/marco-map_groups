@@ -55,8 +55,7 @@ You are NOT a member of this group.
         {% if membership and member.show_real_name %}
             <b>{{ member.user.get_full_name }}</b> <!-- Show real name -->
         {% else %}
-            Don't show real name
-            <b>{{ member.user.get_short_name }}</b> <!-- Show name -->
+            <b>{{ member.user.get_short_name }}</b> <!-- Show pref name -->
         {% endif %}
 
         {% if member.user == mapgroup.owner %}
