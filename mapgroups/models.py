@@ -2,11 +2,48 @@ from django.contrib.auth.models import User, Group
 from django.db import models
 from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404
+from django.utils.crypto import get_random_string
 from django.utils.text import slugify
+from features.registry import enable_sharing
+
 
 class MapGroupManager(models.Manager):
+    def create(self, name, owner, open=False, blurb=''):
+        """Creates a new map group with the specified options, owned by the
+        specified user.
+
+        @returns a tuple of (group, member)
+        """
+        mg = MapGroup()
+        mg.name = name
+        mg.blurb = blurb
+        mg.owner = owner
+        mg.is_open = open
+
+        # Introduce a dependency on Groups so the Madrona feature sharing
+        # will continue to work.
+        name = mg._permission_group_name()
+        pg = Group.objects.create(name=name)
+        enable_sharing(pg)
+
+        mg.permission_group = pg
+        mg.save()
+
+        # Add the owner to the new perm group
+        owner.groups.add(pg)
+
+        member = MapGroupMember()
+        member.user = owner
+        member.is_manager = True
+        member.map_group = mg
+        member.save()
+
+        return mg, member
+
+
+class MapGroupNonFeaturedManager(models.Manager):
     def get_queryset(self):
-        qs = super(MapGroupManager, self).get_queryset()
+        qs = super(MapGroupNonFeaturedManager, self).get_queryset()
         qs = qs.filter(featuredgroups__isnull=True)
         return qs
 
@@ -25,12 +62,13 @@ class MapGroup(models.Model):
 #     icon = models.URLField()
 #     image = models.URLField()
     blurb = models.CharField(max_length=512)    # how long?
+    permission_group = models.ForeignKey(Group, unique=True)
     
     is_open = models.BooleanField(default=False, help_text=("If false, users "
         "must be invited or request to join this group"))
 
-    objects = models.Manager()
-    not_featured = MapGroupManager()
+    objects = MapGroupManager()
+    not_featured = MapGroupNonFeaturedManager()
     featured = MapGroupFeaturedManager()
 
     def __str__(self):
@@ -68,17 +106,18 @@ class MapGroup(models.Model):
         except MapGroupMember.DoesNotExist:
             return None
 
+    def _permission_group_name(self):
+        """Compute the name of the permission group associated with this map
+        group"""
+        # The name is slug + 8 random chars
+        # if the slug is >= 80 (Group.name max length), then replace the
+        # last 8 chars with randomness.
+        # This is done because slugs aren't guaranteed to be unique, but we
+        # want permission groups to be unique to the map group.
+        name = slugify(unicode(self.name))
+        name = name[:min(80 - 8, len(name))] + get_random_string(8)
+        return name
 
-    def permission_group_name(self):
-        if not self.pk:
-            raise Exception("Save the model before accessing the perm group name.")
-        return '%s-%s' % (self.slug, self.pk)
-
-    def get_permission_group(self):
-        """Returns the permission group associated with this map group.
-        Can raise a Group.DoesNotExist if something screwy happens.
-        """
-        return Group.objects.get(name=self.permission_group_name())
 
 class MapGroupMember(models.Model):
     class Meta:

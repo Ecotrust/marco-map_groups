@@ -1,38 +1,5 @@
 from django.contrib.auth.models import Group
-from features.registry import enable_sharing
 from mapgroups.models import MapGroup, MapGroupMember, Invitation, ActivityLog
-
-
-def create_map_group(name, owner, open=False, blurb=''):
-    """Creates a new map group with the specified options, owned by the
-    specified user.
-
-    @returns a tuple of (group, member)
-    """
-
-    mg = MapGroup()
-    mg.name = name
-    mg.blurb = blurb
-    mg.owner = owner
-    mg.is_open = open
-    mg.save()
-
-    member = MapGroupMember()
-    member.user = owner
-    member.is_manager = True
-    member.map_group = mg
-    member.save()
-
-    # Introduce a weak dependency on Groups so the Madrona feature sharing
-    # will continue to work.
-    name = mg.permission_group_name()
-    pg = Group.objects.create(name=name)
-    enable_sharing(pg)
-
-    # Add the owner to the new perm group
-    owner.groups.add(pg)
-
-    return mg, member
 
 
 def join_map_group(user, group):

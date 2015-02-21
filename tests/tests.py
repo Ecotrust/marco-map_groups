@@ -29,8 +29,9 @@ def create_users():
 class MapGroupTest(TestCase):
     def setUp(self):
         self.users = create_users()
-        self.mg = MapGroup(name='Swans swiftly swim', blurb='Fluttering Feathers',
-                           owner=self.users['usr1'])
+        self.mg, self.member = create_map_group("Swans swiftly swim",
+                                                self.users['usr1'],
+                                                blurb="<b>Fluttering Feathers</b>")
         self.mg.save()
 
     def test_get_absolute_url(self):
@@ -47,6 +48,7 @@ class MapGroupTest(TestCase):
     def test_get_permission_group(self):
         g = Group.objects.filter(name=self.mg.permission_group_name())
         self.assertTrue(g.exists())
+        g = g[0]
         g2 = self.mg.get_permission_group()
         self.assertEqual(g.pk, g2.pk)
 
