@@ -9,7 +9,7 @@ from django.views.generic.detail import DetailView
 from django.views.generic.edit import CreateView, ModelFormMixin
 from django.views.generic.list import ListView
 
-from mapgroups.actions import create_map_group, join_map_group
+from mapgroups.actions import join_map_group
 from mapgroups.forms import CreateGroupForm, JoinMapGroupActionForm, \
     RequestJoinMapGroupActionForm, EditMapGroupForm, MapGroupPreferencesForm
 from mapgroups.models import MapGroup, FeaturedGroups
@@ -22,10 +22,10 @@ class MapGroupCreate(CreateView):
     fields = ['name', 'blurb', 'is_open']
 
     def form_valid(self, form):
-        mg, member = create_map_group(name=form.cleaned_data['name'],
-                                      blurb=form.cleaned_data['blurb'],
-                                      open=form.cleaned_data['is_open'],
-                                      owner=self.request.user)
+        mg, member = MapGroup.objects.create(name=form.cleaned_data['name'],
+                                             blurb=form.cleaned_data['blurb'],
+                                             open=form.cleaned_data['is_open'],
+                                             owner=self.request.user)
         self.object = mg
         return super(ModelFormMixin, self).form_valid(form)
 

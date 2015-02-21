@@ -20,7 +20,7 @@ def join_map_group(user, group):
                                            show_real_name=False)
     member.save()
 
-    pg = Group.objects.get(name=group.permission_group_name())
+    pg = group.permission_group
     user.groups.add(pg)
 
     log = ActivityLog()

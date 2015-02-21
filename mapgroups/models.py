@@ -81,11 +81,10 @@ class MapGroup(models.Model):
     def rename(self, new_name):
         """Rename the mapgroup and it's associated permission group.
         """
-        old_pg = get_object_or_404(Group, name=self.permission_group_name())
         self.name = new_name
         self.save()
-        old_pg.name = self.permission_group_name()
-        old_pg.save()
+        self.permission_group.name = self._permission_group_name()
+        self.permission_group.save()
 
     def get_absolute_url(self):
         return reverse('mapgroups:detail', kwargs={'pk': self.pk,
