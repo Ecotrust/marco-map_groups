@@ -5,7 +5,7 @@ from django.db import IntegrityError
 from django.test import TestCase
 from django.test.client import Client
 
-from mapgroups.actions import create_map_group, join_map_group, \
+from mapgroups.actions import join_map_group, \
     request_map_group_invitation
 from mapgroups.models import MapGroup, MapGroupMember, ActivityLog, Invitation, \
     FeaturedGroups
@@ -29,8 +29,8 @@ def create_users():
 class MapGroupTest(TestCase):
     def setUp(self):
         self.users = create_users()
-        self.mg = MapGroup(name='Swans swiftly swim', blurb='Fluttering Feathers',
-                           owner=self.users['usr1'])
+        self.mg, self.member = MapGroup.objects.create("Swans swiftly swim",
+            self.users['usr1'], blurb="<b>Fluttering Feathers</b>")
         self.mg.save()
 
     def test_get_absolute_url(self):
@@ -44,22 +44,26 @@ class MapGroupTest(TestCase):
         self.assertTrue(anon.is_anonymous())
         self.assertFalse(self.mg.has_member(anon))
 
-    def test_get_permission_group(self):
-        g = Group.objects.filter(name=self.mg.permission_group_name())
-        self.assertTrue(g.exists())
-        g2 = self.mg.get_permission_group()
-        self.assertEqual(g.pk, g2.pk)
+    def test_permission_group_name(self):
+        m = MapGroup(name='x' * 90)
+        self.assertEqual(len(m._permission_group_name()), 80)
+
+        m = MapGroup(name='x' * 10)
+        self.assertEqual(len(m._permission_group_name()), 18)
+
 
 class FeaturedMapGroupTest(TestCase):
     def setUp(self):
         self.users = create_users()
-        self.mg1 = MapGroup(name='Swans swiftly swim', blurb='Fluttering Feathers',
-                            owner=self.users['usr1'])
-        self.mg1.save()
+        self.mg1, self.mg1_owner = MapGroup.objects.create(
+                                        name='Swans swiftly swim',
+                                        blurb='Fluttering Feathers',
+                                        owner=self.users['usr1'])
 
-        self.mg2 = MapGroup(name='Octopus Openly Outrageous', blurb='Somany Suckers',
-                            owner=self.users['usr2'])
-        self.mg2.save()
+        self.mg2, self.mg2_owner = MapGroup.objects.create(
+                                           name='Octopus Openly Outrageous',
+                                           blurb='Somany Suckers',
+                                           owner=self.users['usr2'])
         self.mg2.featuredgroups_set.create(rank=1)
 
     def test_managers(self):
@@ -86,7 +90,7 @@ class CreateMapGroupTest(TestCase):
 
     def setUp(self):
         self.users = create_users()
-        self.mg, self.member = create_map_group("Turtles Travel Together",
+        self.mg, self.member = MapGroup.objects.create("Turtles Travel Together",
                                                 self.users['usr1'],
                                                 blurb="<b>I like turtles</b>")
 
@@ -109,12 +113,8 @@ class CreateMapGroupTest(TestCase):
         self.assertEqual(manager.map_group, mg)
         self.assertTrue(manager.is_manager)
 
-    def test_group_created_permission_group(self):
-        self.assertTrue(
-            Group.objects.filter(name=self.mg.permission_group_name()).exists())
-
     def test_group_owner_in_permission_group(self):
-        pgname = self.mg.permission_group_name()
+        pgname = self.mg.permission_group.name
         self.assertTrue(self.mg.owner.groups.filter(name=pgname).exists())
 
     def tearDown(self):
@@ -130,10 +130,10 @@ class EditMapGroupTest(TestCase):
 
     def setUp(self):
         self.users = create_users()
-        self.mg, self.member = create_map_group("Turtles Travel Together",
-                                                self.users['usr1'],
-                                                blurb="<b>I like turtles</b>",
-                                                open=True)
+        self.mg, self.member = MapGroup.objects.create("Turtles Travel Together",
+                                                       self.users['usr1'],
+                                                       blurb="<b>I like turtles</b>",
+                                                       open=True)
 
     def test_anonymous_users_cant_edit(self):
         c = Client()
@@ -167,8 +167,9 @@ class EditMapGroupTest(TestCase):
         # add some members to test renaming
         join_map_group(self.users['usr2'], self.mg)
         join_map_group(self.users['usr3'], self.mg)
-        self.assertTrue(self.users['usr2'].groups.filter(name=self.mg.permission_group_name()).exists())
-        self.assertTrue(self.users['usr3'].groups.filter(name=self.mg.permission_group_name()).exists())
+        # TODO: test group membership the right way
+        self.assertTrue(self.users['usr2'].groups.filter(name=self.mg.permission_group.name).exists())
+        self.assertTrue(self.users['usr3'].groups.filter(name=self.mg.permission_group.name).exists())
 
         data = {
             'name': 'Tarantula Tuesdays',
@@ -188,14 +189,14 @@ class EditMapGroupTest(TestCase):
         self.assertEqual(mg.is_open, data['is_open'])
         self.assertEqual(mg.owner, self.users['usr1'])
 
-        old_pg = Group.objects.filter(name=self.mg.permission_group_name())
+        old_pg = Group.objects.filter(name=self.mg.permission_group.name)
         self.assertFalse(old_pg.exists(), "Old permission group wasn't deleted")
-        pg = Group.objects.filter(name=mg.permission_group_name())
+        pg = Group.objects.filter(name=mg.permission_group.name)
         self.assertTrue(pg.exists(), "New permission group doesn't exist")
 
-        self.assertTrue(mg.owner.groups.filter(name=mg.permission_group_name()).exists())
-        self.assertTrue(self.users['usr2'].groups.filter(name=mg.permission_group_name()).exists())
-        self.assertTrue(self.users['usr3'].groups.filter(name=mg.permission_group_name()).exists())
+        self.assertTrue(mg.owner.groups.filter(name=mg.permission_group.name).exists())
+        self.assertTrue(self.users['usr2'].groups.filter(name=mg.permission_group.name).exists())
+        self.assertTrue(self.users['usr3'].groups.filter(name=mg.permission_group.name).exists())
 
     def tearDown(self):
         for user in self.users.values():
@@ -207,10 +208,10 @@ class EditMapGroupTest(TestCase):
 class MapGroupPreferencesTest(TestCase):
     def setUp(self):
         self.users = create_users()
-        self.mg, self.member = create_map_group("Turtles Travel Together",
-                                                self.users['usr1'],
-                                                blurb="<b>I like turtles</b>",
-                                                open=True)
+        self.mg, self.member = MapGroup.objects.create("Turtles Travel Together",
+                                                       self.users['usr1'],
+                                                       blurb="<b>I like turtles</b>",
+                                                       open=True)
 
     def test_post_redirects(self):
         u = self.users['usr1']
@@ -308,12 +309,13 @@ class JoinMapGroupTest(TestCase):
 
     def setUp(self):
         self.users = create_users()
-        open_group, _ = create_map_group('Salmon swiftly swam',
-                                         self.users['usr1'],
-                                         open=True)
+        open_group, _ = MapGroup.objects.create('Salmon swiftly swam',
+                                                self.users['usr1'],
+                                                open=True)
         self.open_group = open_group
-        closed_group, _ = create_map_group('Gulls gently glide',
-                                           self.users['usr2'], open=False)
+        closed_group, _ = MapGroup.objects.create('Gulls gently glide',
+                                                  self.users['usr2'],
+                                                  open=False)
         self.closed_group = closed_group
 
     def test_join_open_group(self):
@@ -323,7 +325,7 @@ class JoinMapGroupTest(TestCase):
         self.assertIsInstance(result, MapGroupMember)
 
         # Make sure the user gets added to the permission group
-        pgroup_name = self.open_group.permission_group_name()
+        pgroup_name = self.open_group.permission_group.name
         user_pgroup = self.users['usr1'].groups.filter(name=pgroup_name)
         self.assertTrue(user_pgroup.exists())
 
@@ -333,7 +335,7 @@ class JoinMapGroupTest(TestCase):
         self.assertEqual(result.user, self.users['usr2'])
 
         # Make sure the user gets added to the permission group
-        pgroup_name = self.open_group.permission_group_name()
+        pgroup_name = self.open_group.permission_group.name
         user_pgroup = self.users['usr2'].groups.filter(name=pgroup_name)
         self.assertTrue(user_pgroup.exists())
 
@@ -374,12 +376,12 @@ class JoinMapGroupTest(TestCase):
 class JoinMapGroupActionViewTest(TestCase):
     def setUp(self):
         self.users = create_users()
-        open_group, _ = create_map_group('Salmon swiftly swam',
-                                         self.users['usr1'],
-                                         open=True)
+        open_group, _ = MapGroup.objects.create('Salmon swiftly swam',
+                                                self.users['usr1'],
+                                                open=True)
         self.open_group = open_group
-        closed_group, _ = create_map_group('Gulls gently glide',
-                                           self.users['usr2'], open=False)
+        closed_group, _ = MapGroup.objects.create('Gulls gently glide',
+                                                  self.users['usr2'], open=False)
         self.closed_group = closed_group
 
     def test_join_open_group_anon(self):
