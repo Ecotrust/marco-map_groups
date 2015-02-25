@@ -422,3 +422,19 @@ class MapGroupMemberTest(TestCase):
 
     def test_user_name_for_group(self):
         self.fail('Make sure this shows the correct username per group setting.')
+
+
+class MapGroupRPCTest(TestCase):
+    def setUp(self):
+        self.users = create_users()
+        self.mg, self.member = MapGroup.objects.create("Swans swiftly swim",
+            self.users['usr1'], blurb="<b>Fluttering Feathers</b>")
+        self.mg.save()
+
+    def test_mp_820(self):
+        c = Client()
+        try:
+            c.get(reverse('mapgroups:rpc:get_sharing_groups'))
+        except AttributeError:
+            self.fail("Get sharing groups anonymously failed (MP-820)")
+    

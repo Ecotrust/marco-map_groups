@@ -33,17 +33,18 @@ def get_sharing_groups(request):
     # return HttpResponse(json.dumps(data))
 
     data = []
-    for membership in request.user.mapgroupmember_set.all():
-        group = membership.map_group
-        members = [member.user_name_for_group()
-                   for member in group.mapgroupmember_set.all()]
-        members.sort()
+    if not request.user.is_anonymous():
+        for membership in request.user.mapgroupmember_set.all():
+            group = membership.map_group
+            members = [member.user_name_for_group()
+                       for member in group.mapgroupmember_set.all()]
+            members.sort()
 
-        data.append({
-            'group_name': group.name,
-            'group_slug': group.permission_group_name(),
-            'members': members,
-        })
+            data.append({
+                'group_name': group.name,
+                'group_slug': group.permission_group_name(),
+                'members': members,
+            })
 
     # safe=False because it's a list.
     # TODO: refactor into a dict response,
