@@ -1,3 +1,4 @@
+import datetime
 from django.contrib.auth.models import User, Group
 from django.db import models
 from django.core.urlresolvers import reverse
@@ -171,7 +172,8 @@ class FeaturedGroups(models.Model):
 class RecentActivityManager(models.Manager):
     def get_queryset(self):
         qs = super(RecentActivityManager, self).get_queryset()
-        return qs.filter(date_created__lte=7)
+        seven_days_ago = datetime.datetime.now() - datetime.timedelta(days=7)
+        return qs.filter(date_created__gte=seven_days_ago)
 
 
 # TODO: This isn't sufficient for admin messages
