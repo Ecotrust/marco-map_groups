@@ -1,7 +1,9 @@
+import json
 from django.contrib import auth
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User, Group
 from django.db import IntegrityError
+from django.http import JsonResponse
 from django.test import TestCase
 from django.test.client import Client
 
@@ -431,10 +433,35 @@ class MapGroupRPCTest(TestCase):
             self.users['usr1'], blurb="<b>Fluttering Feathers</b>")
         self.mg.save()
 
-    def test_mp_820(self):
+    def test_mp_820_anon_get_sharing_groups_works(self):
         c = Client()
         try:
             c.get(reverse('mapgroups:rpc:get_sharing_groups'))
         except AttributeError:
             self.fail("Get sharing groups anonymously failed (MP-820)")
     
+    def test_get_sharing_groups_logged_in(self):
+        c = Client()
+        self.assertTrue(c.login(username=self.users['usr1'].username,
+                                password='abc'))
+        r = c.get(reverse('mapgroups:rpc:get_sharing_groups'))
+
+        self.assertIsInstance(r, JsonResponse, "Didn't get a JsonResponse")
+        try:
+            data = json.loads(r.content)
+        except ValueError:
+            self.fail('Response was parsable not JSON')
+
+        # User 1 should have a single sharing group
+        self.assertIsInstance(data, list)
+        self.assertEqual(len(data), 1)
+
+        data = data[0]
+        self.assertIn('group_name', data.keys())
+        self.assertIn('group_slug', data.keys())
+        self.assertIn('members', data.keys())
+
+        # If new keys are added then modify the test
+        self.assertEqual(len(data.keys()), 3)
+
+

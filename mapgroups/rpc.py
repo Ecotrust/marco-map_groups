@@ -42,7 +42,7 @@ def get_sharing_groups(request):
 
             data.append({
                 'group_name': group.name,
-                'group_slug': group.permission_group_name(),
+                'group_slug': group.permission_group.name,
                 'members': members,
             })
 
