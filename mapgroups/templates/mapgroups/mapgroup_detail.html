@@ -6,7 +6,7 @@
 
 <hr>
 
-<p>Owned by: {{ mapgroup.owner }}</p>
+<p>Owned by: {{ mapgroup.owner.get_short_name }}</p>
 <hr>
 
 {% if request.user == mapgroup.owner %}
