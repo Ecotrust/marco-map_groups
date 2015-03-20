@@ -1,13 +1,15 @@
 {% extends "base.html" %}
 
+{% block title %}{{ mapgroup.name }}{% endblock %}
+
+{% block page_header %}
+	<a href="{% url 'mapgroups:list' %}" class="btn btn-success"><span class="icon">←</span> Back to group list</a>
+{% endblock %}
+
 {% block content %}
-<h2>{{ mapgroup.blurb }} </h2>
-<a href="{% url 'mapgroups:list' %}">&larr; Back to group list</a>
-
-<hr>
-
+<h1>{{ mapgroup.name }}</h1>
+<h2>{{ mapgroup.blurb }}</h2>
 <p>Owned by: {{ mapgroup.owner.get_short_name }}</p>
-<hr>
 
 {% if request.user == mapgroup.owner %}
 
@@ -21,16 +23,6 @@
 {% if user_is_member %}
 You are a member of this group. <button disabled>Leave group</button>
 
-<form method="POST"
-      action="{% url 'mapgroups:preferences' mapgroup.pk mapgroup.slug %}">
-    {% csrf_token %}
-    {{ preferences_form.as_p }}
-    <script>
-        document.querySelector('#id_show_real_name').onclick = function() {
-            this.form.submit();
-        };
-    </script>
-</form>
 
 {% else %}
 <h3>Join this Group</h3>
@@ -60,8 +52,8 @@ You are NOT a member of this group.
     <li>
         <img src="{{ member.user.userdata.profile_image }}" width="32" height="32" />
 
-        {% if membership and member.show_real_name %}
-            <b>{{ member.user.get_full_name }}</b> <!-- Show real name -->
+        {% if membership %}
+            <b>{{ member.user_name_for_group }}</b> <!-- Show real name -->
         {% else %}
             <b>{{ member.user.get_short_name }}</b> <!-- Show pref name -->
         {% endif %}
@@ -69,9 +61,94 @@ You are NOT a member of this group.
         {% if member.user == mapgroup.owner %}
             (owner)
         {% endif %}
+
+        {% if member.user == request.user %}
+            (you)
+            <form method="POST"
+                  action="{% url 'mapgroups:preferences' mapgroup.pk mapgroup.slug %}">
+                {% csrf_token %}
+                {{ preferences_form.as_p }}
+                <script>
+                    document.querySelector('#id_show_real_name').onclick = function() {
+                        this.form.submit();
+                    };
+                </script>
+            </form>
+        {% endif %}
+
+        {% if membership %}
+
+
+        {% endif %}
+
+
     </li>
     {% endfor %}
 </ol>
 
+{% if shared_items %}
+    <p>Shared Items</p>
+    <ul>
+        {% if shared_items.bookmarks %}
+        <li>Shared Maps
+            <ul>
+                {% for object in shared_items.bookmarks %}
+                    <li>{{ object.name }}</li>
+                {% empty %}
+                    <li>No shared maps.</li>
+                {% endfor %}
+            </ul>
+        </li>
+        {% endif %}
+
+        {% if shared_items.scenarios %}
+        <li>Shared Scenarios
+            <ul>
+                {% for object in shared_items.scenarios %}
+                    <li>{{ object.name }}</li>
+                {% empty %}
+                    <li>No shared scenarios.</li>
+                {% endfor %}
+            </ul>
+        </li>
+        {% endif %}
+
+        {% if shared_items.leaseblock_selections %}
+        <li>Shared Lease Block Selections
+            <ul>
+                {% for object in shared_items.leaseblock_selections %}
+                    <li>{{ object.name }}</li>
+                {% empty %}
+                    <li>No shared lease block selections.</li>
+                {% endfor %}
+            </ul>
+        </li>
+        {% endif %}
+
+        {% if shared_items.drawings %}
+        <li>Shared Drawings
+            <ul>
+                {% for object in shared_items.drawings %}
+                    <li>{{ object.name }}</li>
+                {% empty %}
+                    <li>No shared drawings.</li>
+                {% endfor %}
+            </ul>
+        </li>
+        {% endif %}
+
+        {% if shared_items.windenergysites %}
+        <li>Shared Wind Energy Sites
+            <ul>
+                {% for object in shared_items.windenergysites %}
+                    <li>{{ object.name }}</li>
+                {% empty %}
+                    <li>No shared wind energy sites.</li>
+                {% endfor %}
+            </ul>
+        </li>
+        {% endif %}
+    </ul>
+{% endif %}
 
 {% endblock %}

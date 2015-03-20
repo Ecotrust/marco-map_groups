@@ -48,6 +48,15 @@ class MapGroupDetailView(DetailView):
         context['preferences_form'] = MapGroupPreferencesForm({
             'show_real_name': show_real_name
         })
+
+        pg = self.object.permission_group
+        shared_items = {}
+        shared_items['bookmarks'] = pg.visualize_bookmark_related.all()
+        shared_items['scenarios'] = pg.scenarios_scenario_related.all()
+        shared_items['leaseblock_selections'] = pg.scenarios_leaseblockselection_related.all()
+        shared_items['drawings'] = pg.drawing_aoi_related.all()
+        shared_items['windenergysites'] = pg.drawing_windenergysite_related.all()
+        context['shared_items'] = shared_items
         return context
 
 
