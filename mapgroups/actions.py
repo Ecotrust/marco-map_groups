@@ -33,6 +33,20 @@ def join_map_group(user, group):
     return member
 
 
+def leave_non_owned_map_group(user, group):
+    # can't leave a group if you own it
+    if group.owner == user:
+        return False
+
+    # Can't leave a group that you're not an owner of
+    if not group.has_member(user):
+        return False
+
+    group.mapgroupmember_set.get(user=user).delete()
+    group.permission_group.user_set.remove(user)
+
+    return True
+
 def request_map_group_invitation(user, group, message=''):
     """Send a request to join a closed group.
     """
