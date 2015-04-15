@@ -34,6 +34,20 @@ def join_map_group(user, group):
     return member
 
 
+def delete_owned_map_group(user, group):
+    # can't delete a group unless you own it
+    if group.owner != user:
+        return False
+
+    pgroup = group.permission_group
+    group.delete()
+    pgroup.delete()
+
+    # foreign key cascaded deletes should take care of everything else.
+
+    return True
+
+
 def leave_non_owned_map_group(user, group):
     # can't leave a group if you own it
     if group.owner == user:

@@ -8,7 +8,8 @@ from django.test import TestCase
 from django.test.client import Client
 
 from mapgroups.actions import join_map_group, \
-    request_map_group_invitation, leave_non_owned_map_group
+    request_map_group_invitation, leave_non_owned_map_group, \
+    delete_owned_map_group
 from mapgroups.models import MapGroup, MapGroupMember, ActivityLog, Invitation, \
     FeaturedGroups
 
@@ -398,6 +399,42 @@ class LeaveNonOwnedMapGroupTest(TestCase):
         self.assertTrue(result)
         self.assertFalse(group.has_member(user))
         self.assertFalse(group.permission_group.user_set.filter(pk=user.pk).exists())
+
+
+class DeleteOwnedMapGroupTest(TestCase):
+    """A group owner deletes a map group that they own.
+    """
+
+    def setUp(self):
+        self.users = create_users()
+
+    def test_owner_delete_group(self):
+        user = self.users['usr1']
+        self.group1, _ = MapGroup.objects.create('Salmon swiftly swam',
+                                                 user, open=True)
+
+        gpk = self.group1.pk
+        pgpk = self.group1.permission_group.pk
+
+        result = delete_owned_map_group(user, self.group1)
+        self.assertTrue(result)
+
+        self.assertFalse(MapGroup.objects.filter(pk=gpk).exists())
+        self.assertFalse(Group.objects.filter(pk=pgpk).exists())
+
+    def test_nonowner_delete_group(self):
+        user = self.users['usr1']
+        self.group1, _ = MapGroup.objects.create('Salmon swiftly swam',
+                                                 user, open=True)
+
+        gpk = self.group1.pk
+        pgpk = self.group1.permission_group.pk
+
+        result = delete_owned_map_group(self.users['usr2'], self.group1)
+
+        self.assertFalse(result)
+        self.assertTrue(MapGroup.objects.filter(pk=gpk).exists())
+        self.assertTrue(Group.objects.filter(pk=pgpk).exists())
 
 
 class JoinMapGroupActionViewTest(TestCase):

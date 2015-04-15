@@ -11,45 +11,56 @@
 
 {% if request.user == mapgroup.owner %}
 
-<a href="{% url 'mapgroups:edit' mapgroup.pk mapgroup.slug %}">Edit Map Group</a>
+    <a href="{% url 'mapgroups:edit' mapgroup.pk mapgroup.slug %}">Edit Map Group</a>
 
 {% endif %}
 
 
-
-<hr>
 {% if user_is_member %}
-You are a member of this group. <button disabled>Leave group</button>
+    You are a member of this group.
 
-<form method="POST"
-      action="{% url 'mapgroups:preferences' mapgroup.pk mapgroup.slug %}">
-    {% csrf_token %}
-    {{ preferences_form.as_p }}
-    <script>
-        document.querySelector('#id_show_real_name').onclick = function() {
-            this.form.submit();
-        };
-    </script>
-</form>
+    {% if request.user == mapgroup.owner %}
+        <form method="POST" action="{% url 'mapgroups:delete' mapgroup.pk mapgroup.slug %}">
+            {% csrf_token %}
+            <button class="btn btn-danger" type="submit">Delete group</button>
+        </form>
+    {% else %}
+        <form method="POST" action="{% url 'mapgroups:leave' mapgroup.pk mapgroup.slug %}">
+            {% csrf_token %}
+            <button class="btn btn-default" type="submit">Leave group</button>
+        </form>
+    {% endif %}
+
+
+    <form method="POST"
+          action="{% url 'mapgroups:preferences' mapgroup.pk mapgroup.slug %}">
+        {% csrf_token %}
+        {{ preferences_form.as_p }}
+        <script>
+            document.querySelector('#id_show_real_name').onclick = function() {
+                this.form.submit();
+            };
+        </script>
+    </form>
 
 {% else %}
-<h3>Join this Group</h3>
+    <h3>Join this Group</h3>
 
-You are NOT a member of this group.
+    You are NOT a member of this group.
 
-{% if mapgroup.is_open %}
-(open)
-<form method="POST" action="{% url 'mapgroups:join' mapgroup.pk mapgroup.slug %}">
-    {% csrf_token %}
-    <input type="submit" value="Click this button">
-</form>
-{% else %}
-(closed)
-<form method="POST" action="{% url 'mapgroups:request-join' mapgroup.pk mapgroup.slug %}">
-    {% csrf_token %}
-    <input type="submit" value="Click this button">
-</form>
-{% endif %}
+    {% if mapgroup.is_open %}
+        (open)
+        <form method="POST" action="{% url 'mapgroups:join' mapgroup.pk mapgroup.slug %}">
+            {% csrf_token %}
+            <input type="submit" value="Click this button">
+        </form>
+    {% else %}
+        (closed)
+        <form method="POST" action="{% url 'mapgroups:request-join' mapgroup.pk mapgroup.slug %}">
+            {% csrf_token %}
+            <input type="submit" value="Click this button">
+        </form>
+    {% endif %}
 {% endif %}
 
 <hr>
