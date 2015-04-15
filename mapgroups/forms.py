@@ -32,6 +32,14 @@ class JoinMapGroupActionForm(DivForm):
     pass
 
 
+class LeaveMapGroupActionForm(DivForm):
+    pass
+
+
+class DeleteMapGroupActionForm(DivForm):
+    pass
+
+
 class MapGroupPreferencesForm(DivForm):
     show_real_name = forms.BooleanField(required=False)
 

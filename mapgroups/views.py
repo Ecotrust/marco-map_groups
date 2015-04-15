@@ -9,9 +9,11 @@ from django.views.generic.detail import DetailView
 from django.views.generic.edit import CreateView, ModelFormMixin
 from django.views.generic.list import ListView
 
-from mapgroups.actions import join_map_group
+from mapgroups.actions import join_map_group, leave_non_owned_map_group, \
+    delete_owned_map_group
 from mapgroups.forms import CreateGroupForm, JoinMapGroupActionForm, \
-    RequestJoinMapGroupActionForm, EditMapGroupForm, MapGroupPreferencesForm
+    RequestJoinMapGroupActionForm, EditMapGroupForm, MapGroupPreferencesForm, \
+    LeaveMapGroupActionForm, DeleteMapGroupActionForm
 from mapgroups.models import MapGroup, FeaturedGroups
 from nursery.view_helpers import decorate_view
 
@@ -80,6 +82,46 @@ class JoinMapGroupActionView(FormView):
             pass
 
         return super(JoinMapGroupActionView, self).form_valid(form)
+
+
+@decorate_view(login_required)
+class LeaveMapGroupActionView(FormView):
+    template_name = None
+    form_class = LeaveMapGroupActionForm
+
+    def post(self, request, *args, **kwargs):
+        self.mapgroup = MapGroup.objects.get(pk=kwargs['pk'])
+        self.success_url = reverse('mapgroups:detail', kwargs=kwargs)
+        return super(LeaveMapGroupActionView, self).post(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        success = leave_non_owned_map_group(self.request.user, self.mapgroup)
+        if not success:
+            # Then we weren't able to leave the group, probably because we
+            # own it or are a member
+            pass
+
+        return super(LeaveMapGroupActionView, self).form_valid(form)
+
+
+@decorate_view(login_required)
+class DeleteMapGroupActionView(FormView):
+    template_name = None
+    form_class = DeleteMapGroupActionForm
+
+    def post(self, request, *args, **kwargs):
+        self.mapgroup = MapGroup.objects.get(pk=kwargs['pk'])
+        self.success_url = reverse('mapgroups:list')
+        return super(DeleteMapGroupActionView, self).post(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        success = delete_owned_map_group(self.request.user, self.mapgroup)
+        if not success:
+            # Then we weren't able to delete the group, probably because we
+            # don't own it
+            pass
+
+        return super(DeleteMapGroupActionView, self).form_valid(form)
 
 
 @decorate_view(login_required)
