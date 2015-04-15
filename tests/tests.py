@@ -8,7 +8,7 @@ from django.test import TestCase
 from django.test.client import Client
 
 from mapgroups.actions import join_map_group, \
-    request_map_group_invitation
+    request_map_group_invitation, leave_non_owned_map_group
 from mapgroups.models import MapGroup, MapGroupMember, ActivityLog, Invitation, \
     FeaturedGroups
 
@@ -373,6 +373,31 @@ class JoinMapGroupTest(TestCase):
                                                    self.closed_group)
         self.assertIsNone(invite)
         self.assertFalse(new)
+
+
+class LeaveNonOwnedMapGroupTest(TestCase):
+    """User leaves a map group that they don't own
+    """
+
+    def setUp(self):
+        self.users = create_users()
+        self.group, _ = MapGroup.objects.create('Salmon swiftly swam',
+                                                self.users['usr1'], open=True)
+
+    def test_leave_group(self):
+        user = self.users['usr2']
+        group = self.group
+        result = join_map_group(user, group)
+        self.assertIsInstance(result, MapGroupMember)
+
+        self.assertTrue(group.has_member(user))
+        self.assertTrue(group.permission_group.user_set.filter(pk=user.pk).exists())
+
+        result = leave_non_owned_map_group(user, group)
+
+        self.assertTrue(result)
+        self.assertFalse(group.has_member(user))
+        self.assertFalse(group.permission_group.user_set.filter(pk=user.pk).exists())
 
 
 class JoinMapGroupActionViewTest(TestCase):

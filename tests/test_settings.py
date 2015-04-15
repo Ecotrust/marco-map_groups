@@ -1,5 +1,12 @@
 # Minimal settings file required to run tests.
 
+from ctypes.util import find_library
+
+# MacOSX + Homebrew
+SPATIALITE_LIBRARY_PATH = find_library('mod_spatialite')
+# Probably everything else
+# SPATIALITE_LIBRARY_PATH = find_library('spatialite')
+
 SECRET_KEY = 'poodles-puddles'
 
 INSTALLED_APPS = [
@@ -8,6 +15,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
 
     'tests',
+    'scenarios',
+    'visualize',
+    'drawing',
     'mapgroups',
 ]
 
@@ -20,7 +30,7 @@ MIDDLEWARE_CLASSES = (
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
+        'ENGINE': 'django.contrib.gis.db.backends.spatialite',
         'NAME': 'some.db',
     }
 }
@@ -29,3 +39,6 @@ ROOT_URLCONF = 'tests.urls'
 
 SHARING_TO_PUBLIC_GROUPS = ['Share with Public']
 SHARING_TO_STAFF_GROUPS = ['Share with Staff']
+
+GEOMETRY_CLIENT_SRID = 4326
+GEOMETRY_DB_SRID = 4326
