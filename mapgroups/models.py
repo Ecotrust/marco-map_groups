@@ -149,6 +149,24 @@ class MapGroupMember(models.Model):
         else:
             return self.user.get_short_name()
 
+    def user_name_for_user(self, user):
+        """Return the proper name to display to a specific user. If the member
+        is not showing their real name, always display their Preferred Name.
+
+        If both users are members of this group, show the member's
+        real name. Otherwise show their preferred name.
+
+        It might be a good idea to display the Real Name if the user's groups
+        and member's groups overlap anywhere.
+        """
+        if not self.show_real_name:
+            return self.user.get_short_name()
+
+        if self.map_group.has_member(user):
+            return self.user.get_full_name()
+        else:
+            return self.user.get_short_name()
+
 
 class FeaturedGroupsManager(models.Manager):
     def get_queryset(self):
