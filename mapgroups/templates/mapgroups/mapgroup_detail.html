@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
+<img src="{{ mapgroup.image_url }}">
 <h2>{{ mapgroup.blurb }}</h2>
 <a href="{% url 'mapgroups:list' %}">&larr; Back to group list</a>
 {% if request.user == mapgroup.owner %}
@@ -23,11 +24,6 @@
 
         {% if member.user == mapgroup.owner %}
             (owner)
-        {% endif %}
-
-        {% if membership %}
-
-
         {% endif %}
 
 
