@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>{{ mapgroup.blurb }} </h2>
+<h2>{{ mapgroup.blurb }}</h2>
 <a href="{% url 'mapgroups:list' %}">&larr; Back to group list</a>
 
 <hr>
@@ -11,7 +11,7 @@
 
 {% if request.user == mapgroup.owner %}
 
-    <a href="{% url 'mapgroups:edit' mapgroup.pk mapgroup.slug %}">Edit Map Group</a>
+<a href="{% url 'mapgroups:edit' mapgroup.pk mapgroup.slug %}">Edit Map Group</a>
 
 {% endif %}
 
@@ -44,23 +44,23 @@
     </form>
 
 {% else %}
-    <h3>Join this Group</h3>
+<h3>Join this Group</h3>
 
-    You are NOT a member of this group.
+You are NOT a member of this group.
 
-    {% if mapgroup.is_open %}
-        (open)
-        <form method="POST" action="{% url 'mapgroups:join' mapgroup.pk mapgroup.slug %}">
-            {% csrf_token %}
-            <input type="submit" value="Click this button">
-        </form>
-    {% else %}
-        (closed)
-        <form method="POST" action="{% url 'mapgroups:request-join' mapgroup.pk mapgroup.slug %}">
-            {% csrf_token %}
-            <input type="submit" value="Click this button">
-        </form>
-    {% endif %}
+{% if mapgroup.is_open %}
+(open)
+<form method="POST" action="{% url 'mapgroups:join' mapgroup.pk mapgroup.slug %}">
+    {% csrf_token %}
+    <input type="submit" value="Click this button">
+</form>
+{% else %}
+(closed)
+<form method="POST" action="{% url 'mapgroups:request-join' mapgroup.pk mapgroup.slug %}">
+    {% csrf_token %}
+    <input type="submit" value="Click this button">
+</form>
+{% endif %}
 {% endif %}
 
 <hr>
@@ -71,8 +71,8 @@
     <li>
         <img src="{{ member.user.userdata.profile_image }}" width="32" height="32" />
 
-        {% if membership and member.show_real_name %}
-            <b>{{ member.user.get_full_name }}</b> <!-- Show real name -->
+        {% if membership %}
+            <b>{{ member.user_name_for_group }}</b> <!-- Show real name -->
         {% else %}
             <b>{{ member.user.get_short_name }}</b> <!-- Show pref name -->
         {% endif %}
@@ -80,9 +80,94 @@
         {% if member.user == mapgroup.owner %}
             (owner)
         {% endif %}
+
+        {% if member.user == request.user %}
+            (you)
+            <form method="POST"
+                  action="{% url 'mapgroups:preferences' mapgroup.pk mapgroup.slug %}">
+                {% csrf_token %}
+                {{ preferences_form.as_p }}
+                <script>
+                    document.querySelector('#id_show_real_name').onclick = function() {
+                        this.form.submit();
+                    };
+                </script>
+            </form>
+        {% endif %}
+
+        {% if membership %}
+
+
+        {% endif %}
+
+
     </li>
     {% endfor %}
 </ol>
 
+{% if shared_items %}
+    <p>Shared Items</p>
+    <ul>
+        {% if shared_items.bookmarks %}
+        <li>Shared Maps
+            <ul>
+                {% for object in shared_items.bookmarks %}
+                    <li>{{ object.name }}</li>
+                {% empty %}
+                    <li>No shared maps.</li>
+                {% endfor %}
+            </ul>
+        </li>
+        {% endif %}
+
+        {% if shared_items.scenarios %}
+        <li>Shared Scenarios
+            <ul>
+                {% for object in shared_items.scenarios %}
+                    <li>{{ object.name }}</li>
+                {% empty %}
+                    <li>No shared scenarios.</li>
+                {% endfor %}
+            </ul>
+        </li>
+        {% endif %}
+
+        {% if shared_items.leaseblock_selections %}
+        <li>Shared Lease Block Selections
+            <ul>
+                {% for object in shared_items.leaseblock_selections %}
+                    <li>{{ object.name }}</li>
+                {% empty %}
+                    <li>No shared lease block selections.</li>
+                {% endfor %}
+            </ul>
+        </li>
+        {% endif %}
+
+        {% if shared_items.drawings %}
+        <li>Shared Drawings
+            <ul>
+                {% for object in shared_items.drawings %}
+                    <li>{{ object.name }}</li>
+                {% empty %}
+                    <li>No shared drawings.</li>
+                {% endfor %}
+            </ul>
+        </li>
+        {% endif %}
+
+        {% if shared_items.windenergysites %}
+        <li>Shared Wind Energy Sites
+            <ul>
+                {% for object in shared_items.windenergysites %}
+                    <li>{{ object.name }}</li>
+                {% empty %}
+                    <li>No shared wind energy sites.</li>
+                {% endfor %}
+            </ul>
+        </li>
+        {% endif %}
+    </ul>
+{% endif %}
 
 {% endblock %}
