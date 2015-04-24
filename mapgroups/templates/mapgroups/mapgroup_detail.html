@@ -3,20 +3,45 @@
 {% block content %}
 <h2>{{ mapgroup.blurb }}</h2>
 <a href="{% url 'mapgroups:list' %}">&larr; Back to group list</a>
-
-<hr>
-
-<p>Owned by: {{ mapgroup.owner.get_short_name }}</p>
-<hr>
-
 {% if request.user == mapgroup.owner %}
-
-<a href="{% url 'mapgroups:edit' mapgroup.pk mapgroup.slug %}">Edit Map Group</a>
-
+<a class="btn btn-success" href="{% url 'mapgroups:edit' mapgroup.pk mapgroup.slug %}">Edit Map Group</a>
 {% endif %}
+
+<hr>
+
+<h3>Group Members</h3>
+<ol>
+    {% for member in mapgroup.mapgroupmember_set.all %}
+    <li>
+        <img src="{{ member.user.userdata.profile_image }}" width="32" height="32" />
+
+        {% if membership %}
+            <b>{{ member.user_name_for_group }}</b> <!-- Show real name -->
+        {% else %}
+            <b>{{ member.user.get_short_name }}</b> <!-- Show pref name -->
+        {% endif %}
+
+        {% if member.user == mapgroup.owner %}
+            (owner)
+        {% endif %}
+
+        {% if membership %}
+
+
+        {% endif %}
+
+
+    </li>
+    {% endfor %}
+</ol>
+
+
+<hr>
+
 
 
 {% if user_is_member %}
+    <h3>Preferences</h3>
     You are a member of this group.
 
     {% if request.user == mapgroup.owner %}
@@ -44,66 +69,27 @@
     </form>
 
 {% else %}
-<h3>Join this Group</h3>
+    <h3>Join this Group</h3>
 
-You are NOT a member of this group.
+    You are NOT a member of this group.
 
-{% if mapgroup.is_open %}
-(open)
-<form method="POST" action="{% url 'mapgroups:join' mapgroup.pk mapgroup.slug %}">
-    {% csrf_token %}
-    <input type="submit" value="Click this button">
-</form>
-{% else %}
-(closed)
-<form method="POST" action="{% url 'mapgroups:request-join' mapgroup.pk mapgroup.slug %}">
-    {% csrf_token %}
-    <input type="submit" value="Click this button">
-</form>
-{% endif %}
+    {% if mapgroup.is_open %}
+        (open)
+        <form method="POST" action="{% url 'mapgroups:join' mapgroup.pk mapgroup.slug %}">
+            {% csrf_token %}
+            <input type="submit" value="Click this button">
+        </form>
+    {% else %}
+    (closed)
+        <form method="POST" action="{% url 'mapgroups:request-join' mapgroup.pk mapgroup.slug %}">
+            {% csrf_token %}
+            <input type="submit" value="Click this button">
+        </form>
+    {% endif %}
 {% endif %}
 
 <hr>
 
-<p>Members:</p>
-<ol>
-    {% for member in mapgroup.mapgroupmember_set.all %}
-    <li>
-        <img src="{{ member.user.userdata.profile_image }}" width="32" height="32" />
-
-        {% if membership %}
-            <b>{{ member.user_name_for_group }}</b> <!-- Show real name -->
-        {% else %}
-            <b>{{ member.user.get_short_name }}</b> <!-- Show pref name -->
-        {% endif %}
-
-        {% if member.user == mapgroup.owner %}
-            (owner)
-        {% endif %}
-
-        {% if member.user == request.user %}
-            (you)
-            <form method="POST"
-                  action="{% url 'mapgroups:preferences' mapgroup.pk mapgroup.slug %}">
-                {% csrf_token %}
-                {{ preferences_form.as_p }}
-                <script>
-                    document.querySelector('#id_show_real_name').onclick = function() {
-                        this.form.submit();
-                    };
-                </script>
-            </form>
-        {% endif %}
-
-        {% if membership %}
-
-
-        {% endif %}
-
-
-    </li>
-    {% endfor %}
-</ol>
 
 {% if shared_items %}
     <p>Shared Items</p>
