@@ -73,7 +73,11 @@ class MapGroup(models.Model):
     featured = MapGroupFeaturedManager()
 
     def __str__(self):
-        return "Map Group '%s'" % self.name
+        s = "Map Group '%s'" % self.name
+
+        if self.featuredgroups_set.exists(): # then this model is featured
+            s += ' (Featured, rank = %d)' % self.featuredgroups_set.get().rank
+        return s
 
     def save(self, *args, **kwargs):
         self.slug = slugify(unicode(self.name))
