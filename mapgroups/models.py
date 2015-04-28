@@ -52,7 +52,7 @@ class MapGroupNonFeaturedManager(models.Manager):
 class MapGroupFeaturedManager(models.Manager):
     def get_queryset(self):
         qs = super(MapGroupFeaturedManager, self).get_queryset()
-        qs = qs.filter(featuredgroups__isnull=False)
+        qs = qs.filter(featuredgroups__isnull=False).order_by('rank')
         return qs
 
 
