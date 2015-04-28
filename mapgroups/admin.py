@@ -15,4 +15,14 @@ class MapGroupAdmin(admin.ModelAdmin):
 
     inlines = [FeaturedMapGroupAdmin, MapGroupMemberAdmin]
 
+    def has_add_permission(self, request):
+        """Restrict creating new map groups in admin
+        """
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        """Restrict deleting map groups in admin
+        """
+        return False
+
 admin.site.register(MapGroup, MapGroupAdmin)
