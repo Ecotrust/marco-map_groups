@@ -1,5 +1,9 @@
+from io import StringIO
+import io
 import json
 from django.contrib import auth
+from django.core.files.uploadedfile import InMemoryUploadedFile, \
+    SimpleUploadedFile
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User, Group
 from django.db import IntegrityError
@@ -11,7 +15,7 @@ from mapgroups.actions import join_map_group, \
     request_map_group_invitation, leave_non_owned_map_group, \
     delete_owned_map_group
 from mapgroups.models import MapGroup, MapGroupMember, ActivityLog, Invitation, \
-    FeaturedGroups
+    FeaturedGroups, map_group_image_path
 
 
 def create_users():
@@ -27,6 +31,28 @@ def create_users():
         u.save()
 
     return users
+
+def tiny_image():
+    """Return an image file-like, suitable for testing image uploads.
+    Currently you're getting a 42 byte transparent 1x1 gif.
+
+    """
+    tiny_gif = b'GIF89a\x01\x00\x01\x00\x80\x00\x00\x00\x00\x00\xff\xff\xff!\xf9\x04\x01\x00\x00\x00\x00,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x01D\x00;'
+    tiny_gif_file = io.BytesIO(tiny_gif)
+    return tiny_gif_file
+
+
+class MiscTests(TestCase):
+    def test_map_group_image_path(self):
+        name = map_group_image_path(None, 'blah.jpg')
+        path_len = len('group_images')
+        path_len += len('/')
+        path_len += 8   # for the date stamp
+        path_len += len('/')
+        path_len += 32  # for the file name hash
+        path_len += 4   # '.' + 'jpg'
+
+        self.assertEqual(len(name), path_len)
 
 
 class MapGroupTest(TestCase):
@@ -274,10 +300,12 @@ class CreateMapGroupViewTest(TestCase):
         c = Client()
         c.login(username=self.users['usr1'].username, password='abc')
 
+
         post_data = {
             'name': 'Clams claim countryside',
             'blurb': 'Not oysters, but clams',
             'is_open': True,
+            'image': SimpleUploadedFile('tiny.gif', tiny_image().read(), 'image/gif')
         }
 
         resp = c.post(reverse('mapgroups:create'), post_data)

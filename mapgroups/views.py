@@ -19,18 +19,36 @@ from nursery.view_helpers import decorate_view
 
 
 @decorate_view(login_required)
-class MapGroupCreate(CreateView):
-    model = MapGroup
-    fields = ['name', 'blurb', 'is_open']
+class MapGroupCreate(FormView):
+    form_class = CreateGroupForm
+    template_name = 'mapgroups/mapgroup_form.html'
 
     def form_valid(self, form):
+        print("MapGroupCreate:form_valid, because you're smart")
         mg, member = MapGroup.objects.create(name=form.cleaned_data['name'],
                                              blurb=form.cleaned_data['blurb'],
                                              open=form.cleaned_data['is_open'],
-                                             owner=self.request.user)
+                                             owner=self.request.user,
+                                             image=form.files['image'])
         self.object = mg
-        return super(ModelFormMixin, self).form_valid(form)
 
+        kwargs = {
+            'pk': mg.id,
+            'slug': mg.slug,
+        }
+
+        self.success_url = reverse('mapgroups:detail', kwargs=kwargs)
+
+        return super(MapGroupCreate, self).form_valid(form)
+
+    def form_invalid(self, form):
+        return super(MapGroupCreate, self).form_invalid(form)
+
+    def get(self, request, *args, **kwargs):
+        return super(MapGroupCreate, self).get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        return super(MapGroupCreate, self).post(request, *args, **kwargs)
 
 class MapGroupDetailView(DetailView):
     model = MapGroup
@@ -50,6 +68,15 @@ class MapGroupDetailView(DetailView):
         context['preferences_form'] = MapGroupPreferencesForm({
             'show_real_name': show_real_name
         })
+
+        pg = self.object.permission_group
+        shared_items = {}
+        shared_items['bookmarks'] = pg.visualize_bookmark_related.all()
+        shared_items['scenarios'] = pg.scenarios_scenario_related.all()
+        shared_items['leaseblock_selections'] = pg.scenarios_leaseblockselection_related.all()
+        shared_items['drawings'] = pg.drawing_aoi_related.all()
+        shared_items['windenergysites'] = pg.drawing_windenergysite_related.all()
+        context['shared_items'] = shared_items
         return context
 
 
@@ -181,6 +208,11 @@ class MapGroupEditView(FormView):
 
         mg.blurb = form.cleaned_data['blurb']
         mg.is_open = form.cleaned_data['is_open']
+
+        # If the user didn't upload a new image, leave the old one alone.
+        if form.cleaned_data['image']:
+            mg.image = form.cleaned_data['image']
+
         mg.save()
 
         mg.rename(form.cleaned_data['name'])

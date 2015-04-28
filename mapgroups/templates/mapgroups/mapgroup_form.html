@@ -3,9 +3,10 @@
 {% block content %}
 
 <p>Create your own map group!</p>
-<form method="POST">
+<form method="POST" enctype="multipart/form-data">
     {% csrf_token %}
-    {{ form.as_p }}
+    {{ form.as_div }}
+    {{ form.errors }}
     <input type="submit" />
 </form>
 

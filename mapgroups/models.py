@@ -1,4 +1,7 @@
 import datetime
+import uuid
+from django.templatetags.static import static
+import os
 from django.contrib.auth.models import User, Group
 from django.db import models
 from django.core.urlresolvers import reverse
@@ -6,10 +9,10 @@ from django.shortcuts import get_object_or_404
 from django.utils.crypto import get_random_string
 from django.utils.text import slugify
 from features.registry import enable_sharing
-
+from django.conf import settings
 
 class MapGroupManager(models.Manager):
-    def create(self, name, owner, open=False, blurb=''):
+    def create(self, name, owner, open=False, blurb='', image=''):
         """Creates a new map group with the specified options, owned by the
         specified user.
 
@@ -20,6 +23,7 @@ class MapGroupManager(models.Manager):
         mg.blurb = blurb
         mg.owner = owner
         mg.is_open = open
+        mg.image = image
 
         # Introduce a dependency on Groups so the Madrona feature sharing
         # will continue to work.
@@ -52,8 +56,17 @@ class MapGroupNonFeaturedManager(models.Manager):
 class MapGroupFeaturedManager(models.Manager):
     def get_queryset(self):
         qs = super(MapGroupFeaturedManager, self).get_queryset()
-        qs = qs.filter(featuredgroups__isnull=False)
+        qs = qs.filter(featuredgroups__isnull=False).order_by('rank')
         return qs
+
+
+def map_group_image_path(instance, filename):
+    """Callable to compute the image path for map groups.
+    """
+    name, ext = os.path.splitext(filename)
+    name = uuid.uuid4().hex
+    base = datetime.date.today().strftime('group_images/%Y%m%d')
+    return '%s/%s%s' % (base, name, ext)
 
 
 class MapGroup(models.Model):
@@ -61,7 +74,11 @@ class MapGroup(models.Model):
     slug = models.SlugField(max_length=255)
     owner = models.ForeignKey(User)
 #     icon = models.URLField()
-#     image = models.URLField()
+    image = models.ImageField(upload_to=map_group_image_path, #'group_images/%Y%m%d/',
+                              width_field='image_width',
+                              height_field='image_height', blank=True, null=True)
+    image_width = models.PositiveSmallIntegerField(default=0, blank=True, null=True)
+    image_height = models.PositiveSmallIntegerField(default=0, blank=True, null=True)
     blurb = models.CharField(max_length=512)    # how long?
     permission_group = models.ForeignKey(Group, unique=True)
     
@@ -73,7 +90,11 @@ class MapGroup(models.Model):
     featured = MapGroupFeaturedManager()
 
     def __str__(self):
-        return "Map Group '%s'" % self.name
+        s = "Map Group '%s'" % self.name
+
+        if self.featuredgroups_set.exists(): # then this model is featured
+            s += ' (Featured, rank = %d)' % self.featuredgroups_set.get().rank
+        return s
 
     def save(self, *args, **kwargs):
         self.slug = slugify(unicode(self.name))
@@ -117,6 +138,11 @@ class MapGroup(models.Model):
         name = slugify(unicode(self.name))
         name = name[:min(80 - 8, len(name))] + get_random_string(8)
         return name
+
+    def image_url(self):
+        if self.image:
+            return self.image.url
+        return static('mapgroups/mapgroups-default-image.jpg')
 
 
 class MapGroupMember(models.Model):
