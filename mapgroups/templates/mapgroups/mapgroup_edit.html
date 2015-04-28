@@ -8,7 +8,7 @@
 <div style="border: 1px solid blue; margin: 1em 10em; padding: 3em">
     <h3 style="text-align: center;">Update your Map Group.</h3>
     <div>
-        <form class="login-form" method="POST" action="{% url 'mapgroups:edit' mapgroup.pk mapgroup.slug %}">
+        <form class="login-form" method="POST" enctype="multipart/form-data" action="{% url 'mapgroups:edit' mapgroup.pk mapgroup.slug %}">
             <style>
             .login-form {
                 margin-bottom: 1em;

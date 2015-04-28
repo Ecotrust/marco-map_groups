@@ -1,7 +1,11 @@
 from django import forms
 
 # TODO: Move to common forms module
-class DivForm(forms.Form):
+from django.forms import ModelForm
+from mapgroups.models import MapGroup
+
+
+class DivForm(object):
     """A form that adds an 'as_div()' method which renders each form element
     inside <div></div> tags.
     """
@@ -16,10 +20,23 @@ class DivForm(forms.Form):
             errors_on_separate_row=False)
 
 
-class CreateGroupForm(DivForm):
+class CreateGroupForm(forms.Form, DivForm):
+    
+    # def __init__(self, *args, **kwargs):
+    #     print("Args are", args)
+    #     print("Kwargs are", kwargs)
+    #     return super(CreateGroupForm, self).__init__()
     name = forms.CharField(max_length=255)
     blurb = forms.CharField(max_length=512)
     is_open = forms.BooleanField(required=False)
+    image = forms.ImageField(required=False)
+
+    def clean(self):
+        print("CreateGroupForm: clean()")
+
+        cleaned_data = super(CreateGroupForm, self).clean()
+
+        return cleaned_data
 
 
 class EditMapGroupForm(CreateGroupForm):
@@ -28,21 +45,21 @@ class EditMapGroupForm(CreateGroupForm):
     """
 
 
-class JoinMapGroupActionForm(DivForm):
+class JoinMapGroupActionForm(forms.Form, DivForm):
     pass
 
 
-class LeaveMapGroupActionForm(DivForm):
+class LeaveMapGroupActionForm(forms.Form, DivForm):
     pass
 
 
-class DeleteMapGroupActionForm(DivForm):
+class DeleteMapGroupActionForm(forms.Form, DivForm):
     pass
 
 
-class MapGroupPreferencesForm(DivForm):
+class MapGroupPreferencesForm(forms.Form, DivForm):
     show_real_name = forms.BooleanField(required=False)
 
 
-class RequestJoinMapGroupActionForm(DivForm):
+class RequestJoinMapGroupActionForm(forms.Form, DivForm):
     message = forms.CharField()

@@ -1,7 +1,14 @@
 {% extends "base.html" %}
 
 {% block content %}
-<img src="{{ mapgroup.image_url }}">
+<style type="text/css">
+    .well > img { width: 345px; height: 194px; }
+    .well { display: inline-block; background-color: #b1b3b5; }
+</style>
+<div class=well>
+    <img src="{{ mapgroup.image_url }}" >
+</div>
+
 <h2>{{ mapgroup.blurb }}</h2>
 <a href="{% url 'mapgroups:list' %}">&larr; Back to group list</a>
 {% if request.user == mapgroup.owner %}
