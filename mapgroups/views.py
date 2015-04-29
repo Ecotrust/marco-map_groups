@@ -57,7 +57,7 @@ class MapGroupDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super(MapGroupDetailView, self).get_context_data(**kwargs)
         context['title'] = self.object.name
-
+        context['owner'] = self.object.get_owner_membership()
         context['user_is_member'] = self.object.has_member(self.request.user)
         context['membership'] = self.object.get_member(self.request.user)
         if context['membership']:
@@ -76,7 +76,10 @@ class MapGroupDetailView(DetailView):
         shared_items['leaseblock_selections'] = pg.scenarios_leaseblockselection_related.all()
         shared_items['drawings'] = pg.drawing_aoi_related.all()
         shared_items['windenergysites'] = pg.drawing_windenergysite_related.all()
-        context['shared_items'] = shared_items
+
+        if any(shared_items.values()):
+            context['shared_items'] = shared_items
+
         return context
 
 

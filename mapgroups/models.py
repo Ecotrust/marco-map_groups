@@ -127,6 +127,9 @@ class MapGroup(models.Model):
         except MapGroupMember.DoesNotExist:
             return None
 
+    def get_owner_membership(self):
+        return self.owner.mapgroupmember_set.get(map_group_id=self.id)
+
     def _permission_group_name(self):
         """Compute the name of the permission group associated with this map
         group"""
