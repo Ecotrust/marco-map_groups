@@ -24,7 +24,6 @@ class MapGroupCreate(FormView):
     template_name = 'mapgroups/mapgroup_form.html'
 
     def form_valid(self, form):
-        print("MapGroupCreate:form_valid, because you're smart")
         mg, member = MapGroup.objects.create(name=form.cleaned_data['name'],
                                              blurb=form.cleaned_data['blurb'],
                                              open=form.cleaned_data['is_open'],

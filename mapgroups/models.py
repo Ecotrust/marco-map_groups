@@ -90,6 +90,18 @@ class MapGroup(models.Model):
     not_featured = MapGroupNonFeaturedManager()
     featured = MapGroupFeaturedManager()
 
+    _original_image_name = None
+
+
+    def __init__(self, *args, **kwargs):
+        super(MapGroup, self).__init__(*args, **kwargs)
+
+        # Save a copy for later so we can see if it changed
+        # The ImageField's file is bound to the model field itself, so to
+        # delete the file on change, we must capture the file name and the
+        # storage object.
+        self._original_image_name = self.image.name
+
     def __str__(self):
         s = "Map Group '%s'" % self.name
 
@@ -98,8 +110,56 @@ class MapGroup(models.Model):
         return s
 
     def save(self, *args, **kwargs):
+        if self.image.name != self._original_image_name:
+            # different image - delete the old image and resize the new one
+            # print("IMAGE CHANGED: old:%s new:%s" % (self._original_image_name, self.image))
+
+            # Resize
+            from PIL import Image, ImageColor, ImageOps
+            from io import BytesIO
+
+            group_image = Image.new('RGB', (345, 194), ImageColor.getrgb('white'))
+
+            uploaded_image = Image.open(self.image.file)
+            # Fit image to size, centering in the middle width and top 2/5 height
+            fit_uploaded_image = ImageOps.fit(uploaded_image, (345, 194))#,centering=(1/2., 2/5.))
+            del uploaded_image
+
+            group_image.paste(fit_uploaded_image)
+
+            group_image_data = BytesIO()
+            group_image.save(group_image_data, 'JPEG')
+            del group_image
+
+            # Uploaded files come in (at least) two flavors:
+            #   InMemoryUploadedFile and TemporaryUploadedFile
+            #
+            # Since we're just reaching in to a data structure and altering it's
+            # contents, it makes sense to be aware of the consequences. The file
+            # attribute is either a BytesIO or a NamedTemporaryFile.
+            # Fortunately, both of these objects die gracefully; the BytesIO
+            # will simply disappear, and the NamedTemporaryFile is only allowed
+            # to exist while it's open. Thus, just dumping the existing file
+            # will work to replace the image with the proper sized version of
+            # itself.
+            #
+            # However, replacing the ImageField's File's file will break if
+            # the internals are changed in some future django. For now, though,
+            # I can't find an better way to alter the contents of the uploaded
+            # file without writing it to disk first.
+            group_image_data.seek(0)
+            self.image.file.file = group_image_data
+
+            # make sure there's a file to delete
+            if self._original_image_name:
+                self.image.storage.delete(self._original_image_name)
+
         self.slug = slugify(unicode(self.name))
-        return super(MapGroup, self).save(*args, **kwargs)
+
+        super(MapGroup, self).save(*args, **kwargs)
+
+        # Reset the image
+        self._original_image_name = self.image
 
     def rename(self, new_name):
         """Rename the mapgroup and it's associated permission group.
