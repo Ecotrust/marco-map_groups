@@ -73,6 +73,7 @@ class MapGroup(models.Model):
     name = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255)
     owner = models.ForeignKey(User)
+    creation_date = models.DateTimeField(auto_created=True)
 #     icon = models.URLField()
     image = models.ImageField(upload_to=map_group_image_path, #'group_images/%Y%m%d/',
                               width_field='image_width',

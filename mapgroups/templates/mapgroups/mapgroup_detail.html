@@ -11,169 +11,172 @@
     .well { display: inline-block; background-color: #b1b3b5; }
 </style>
 
-<!-- left column - profile image -->
-<div class="col-md-1">
-    <img src="{{ mapgroup.image_url }}" width="64" height="36">
-</div>
+<div class="mapgroup">
+    <!-- left column - profile image -->
+    <div class="col-md-1">
+        <img src="{{ mapgroup.image_url }}" width="93" height="70" style="
+        position: absolute; right: 8px">
+    </div>
 
-<div class="col-md-8">
-    <h1 style="margin-top: 0; width: initial">{{ mapgroup.name }}</h1>
-    <p>{{ mapgroup.blurb }}</p>
+    <div class="col-md-8">
+        <h1 style="margin-top: 0; width: initial; border-left: 1px solid #b1b3b5; margin-left: -12px; padding-left: 12px">{{ mapgroup.name }}</h1>
+        <p>{{ mapgroup.blurb }}</p>
 
 
-    <h3>Group Information</h3>
-    <p>Group since: ?/?/?</p>
-    <p>Owned by: {% if user_is_member %}
-                    {{ owner.user_name_for_group }}
-                 {% else %}
-                    {{ owner.user.get_short_name }}
+        <h3>Group Information</h3>
+        <p>Group since: {{ mapgroup.creation_date|date }}</p>
+        <p>Owned by: {% if user_is_member %}
+                        {{ owner.user_name_for_group }}
+                     {% else %}
+                        {{ owner.user.get_short_name }}
+                    {% endif %}
+        </p>
+
+        <div>
+            {# Group action buttons #}
+
+            {% if user_is_member %}
+                {% if request.user != mapgroup.owner %}
+                    <form method="POST" style="display: inline" action="{% url 'mapgroups:leave' mapgroup.pk mapgroup.slug %}">
+                        {% csrf_token %}
+                        <button class="btn btn-default" type="submit">Leave group</button>
+                    </form>
                 {% endif %}
-    </p>
 
-    <div>
-        {# Group action buttons #}
+            {% else %}
+                {% if mapgroup.is_open %}
+                    <form method="POST" style="display: inline" action="{% url 'mapgroups:join' mapgroup.pk mapgroup.slug %}">
+                        {% csrf_token %}
+                        <p>Anyone may join this group.</p>
+                        <button class="btn btn-success" type="submit">Join Group</button>
+                    </form>
+                {% else %}
+                    <form method="POST" style="display: inline" action="{% url 'mapgroups:request-join' mapgroup.pk mapgroup.slug %}">
+                        {% csrf_token %}
+                        <p>Request to join this group.</p>
+                        <button class="btn btn-success" type="submit">Join Group</button>
+                    </form>
+                {% endif %}
+            {% endif %}
+
+            {% if request.user == mapgroup.owner %}
+                <a class="btn btn-success" href="{% url 'mapgroups:edit' mapgroup.pk mapgroup.slug %}">Edit Map Group</a>
+
+                <form method="POST" style="display: inline" action="{% url 'mapgroups:delete' mapgroup.pk mapgroup.slug %}">
+                    {% csrf_token %}
+                    <button class="btn btn-danger" type="submit">Delete group</button>
+                </form>
+            {% endif %}
+        </div>
 
         {% if user_is_member %}
-            {% if request.user != mapgroup.owner %}
-                <form method="POST" style="display: inline" action="{% url 'mapgroups:leave' mapgroup.pk mapgroup.slug %}">
-                    {% csrf_token %}
-                    <button class="btn btn-default" type="submit">Leave group</button>
-                </form>
-            {% endif %}
+            <h3>Preferences</h3>
 
-        {% else %}
-            {% if mapgroup.is_open %}
-                <form method="POST" style="display: inline" action="{% url 'mapgroups:join' mapgroup.pk mapgroup.slug %}">
-                    {% csrf_token %}
-                    <p>Anyone may join this group.</p>
-                    <button class="btn btn-success" type="submit">Join Group</button>
-                </form>
-            {% else %}
-                <form method="POST" style="display: inline" action="{% url 'mapgroups:request-join' mapgroup.pk mapgroup.slug %}">
-                    {% csrf_token %}
-                    <p>Request to join this group.</p>
-                    <button class="btn btn-success" type="submit">Join Group</button>
-                </form>
-            {% endif %}
+            <form method="POST"
+                  action="{% url 'mapgroups:preferences' mapgroup.pk mapgroup.slug %}">
+                {% csrf_token %}
+                {{ preferences_form.as_p }}
+                <script>
+                    document.querySelector('#id_show_real_name').onclick = function() {
+                        this.form.submit();
+                    };
+                </script>
+            </form>
         {% endif %}
 
-        {% if request.user == mapgroup.owner %}
-            <a class="btn btn-success" href="{% url 'mapgroups:edit' mapgroup.pk mapgroup.slug %}">Edit Map Group</a>
 
-            <form method="POST" style="display: inline" action="{% url 'mapgroups:delete' mapgroup.pk mapgroup.slug %}">
-                {% csrf_token %}
-                <button class="btn btn-danger" type="submit">Delete group</button>
-            </form>
+
+        {% if shared_items %}
+            <h3>Shared Items</h3>
+            <ul>
+                {% if shared_items.bookmarks %}
+                <li>Shared Maps
+                    <ul>
+                        {% for object in shared_items.bookmarks %}
+                            <li>{{ object.name }}</li> {# Bookmark url is object.url_hash #}
+                        {% empty %}
+                            <li>No shared maps.</li>
+                        {% endfor %}
+                    </ul>
+                </li>
+                {% endif %}
+
+                {% if shared_items.scenarios %}
+                <li>Shared Scenarios
+                    <ul>
+                        {% for object in shared_items.scenarios %}
+                            <li>{{ object.name }}</li>
+                        {% empty %}
+                            <li>No shared scenarios.</li>
+                        {% endfor %}
+                    </ul>
+                </li>
+                {% endif %}
+
+                {% if shared_items.leaseblock_selections %}
+                <li>Shared Lease Block Selections
+                    <ul>
+                        {% for object in shared_items.leaseblock_selections %}
+                            <li>{{ object.name }}</li>
+                        {% empty %}
+                            <li>No shared lease block selections.</li>
+                        {% endfor %}
+                    </ul>
+                </li>
+                {% endif %}
+
+                {% if shared_items.drawings %}
+                <li>Shared Drawings
+                    <ul>
+                        {% for object in shared_items.drawings %}
+                            <li>{{ object.name }}</li>
+                        {% empty %}
+                            <li>No shared drawings.</li>
+                        {% endfor %}
+                    </ul>
+                </li>
+                {% endif %}
+
+                {% if shared_items.windenergysites %}
+                <li>Shared Wind Energy Sites
+                    <ul>
+                        {% for object in shared_items.windenergysites %}
+                            <li>{{ object.name }}</li>
+                        {% empty %}
+                            <li>No shared wind energy sites.</li>
+                        {% endfor %}
+                    </ul>
+                </li>
+                {% endif %}
+            </ul>
         {% endif %}
     </div>
 
-    {% if user_is_member %}
-        <h3>Preferences</h3>
+    <div class="col-md-3">
+        <h3>Group Members</h3>
+        <ol>
+            {% for member in mapgroup.mapgroupmember_set.all %}
+            <li>
+                <img src="{{ member.user.userdata.profile_image }}" width="32" height="32" />
 
-        <form method="POST"
-              action="{% url 'mapgroups:preferences' mapgroup.pk mapgroup.slug %}">
-            {% csrf_token %}
-            {{ preferences_form.as_p }}
-            <script>
-                document.querySelector('#id_show_real_name').onclick = function() {
-                    this.form.submit();
-                };
-            </script>
-        </form>
-    {% endif %}
-
-
-
-    {% if shared_items %}
-        <h3>Shared Items</h3>
-        <ul>
-            {% if shared_items.bookmarks %}
-            <li>Shared Maps
-                <ul>
-                    {% for object in shared_items.bookmarks %}
-                        <li>{{ object.name }}</li>
-                    {% empty %}
-                        <li>No shared maps.</li>
-                    {% endfor %}
-                </ul>
-            </li>
-            {% endif %}
-
-            {% if shared_items.scenarios %}
-            <li>Shared Scenarios
-                <ul>
-                    {% for object in shared_items.scenarios %}
-                        <li>{{ object.name }}</li>
-                    {% empty %}
-                        <li>No shared scenarios.</li>
-                    {% endfor %}
-                </ul>
-            </li>
-            {% endif %}
-
-            {% if shared_items.leaseblock_selections %}
-            <li>Shared Lease Block Selections
-                <ul>
-                    {% for object in shared_items.leaseblock_selections %}
-                        <li>{{ object.name }}</li>
-                    {% empty %}
-                        <li>No shared lease block selections.</li>
-                    {% endfor %}
-                </ul>
-            </li>
-            {% endif %}
-
-            {% if shared_items.drawings %}
-            <li>Shared Drawings
-                <ul>
-                    {% for object in shared_items.drawings %}
-                        <li>{{ object.name }}</li>
-                    {% empty %}
-                        <li>No shared drawings.</li>
-                    {% endfor %}
-                </ul>
-            </li>
-            {% endif %}
-
-            {% if shared_items.windenergysites %}
-            <li>Shared Wind Energy Sites
-                <ul>
-                    {% for object in shared_items.windenergysites %}
-                        <li>{{ object.name }}</li>
-                    {% empty %}
-                        <li>No shared wind energy sites.</li>
-                    {% endfor %}
-                </ul>
-            </li>
-            {% endif %}
-        </ul>
-    {% endif %}
-</div>
-
-<div class="col-md-3">
-    <h3>Group Members</h3>
-    <ol>
-        {% for member in mapgroup.mapgroupmember_set.all %}
-        <li>
-            <img src="{{ member.user.userdata.profile_image }}" width="32" height="32" />
-
-            {% if membership %}
-                <b>{{ member.user_name_for_group }}</b> <!-- Show real name -->
-            {% else %}
-                <b>{{ member.user.get_short_name }}</b> <!-- Show pref name -->
-            {% endif %}
-
-            {# call out the current user and owner of the group #}
-            {% if request.user == member.user %}
-                (you{% if request.user == mapgroup.owner %}, owner{% endif %})
-            {% else %}
-                {% if member.user == mapgroup.owner %}
-                    (owner)
+                {% if membership %}
+                    <b>{{ member.user_name_for_group }}</b> <!-- Show real name -->
+                {% else %}
+                    <b>{{ member.user.get_short_name }}</b> <!-- Show pref name -->
                 {% endif %}
-            {% endif %}
-        </li>
-        {% endfor %}
-    </ol>
+
+                {# call out the current user and owner of the group #}
+                {% if request.user == member.user %}
+                    (you{% if request.user == mapgroup.owner %}, owner{% endif %})
+                {% else %}
+                    {% if member.user == mapgroup.owner %}
+                        (owner)
+                    {% endif %}
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ol>
+    </div>
 </div>
 
 {% endblock %}
