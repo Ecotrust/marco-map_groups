@@ -22,10 +22,9 @@
         <h1 style="margin-top: 0; width: initial; border-left: 1px solid #b1b3b5; margin-left: -12px; padding-left: 12px">{{ mapgroup.name }}</h1>
         <p>{{ mapgroup.blurb }}</p>
 
-
         <h3>Group Information</h3>
-        <p>Group since: {{ mapgroup.creation_date|date }}</p>
-        <p>Owned by: {% if user_is_member %}
+        <p><strong>Group since:</strong> {{ mapgroup.creation_date|date }}</p>
+        <p><strong>Owned by:</strong> {% if user_is_member %}
                         {{ owner.user_name_for_group }}
                      {% else %}
                         {{ owner.user.get_short_name }}
@@ -39,7 +38,7 @@
                 {% if request.user != mapgroup.owner %}
                     <form method="POST" style="display: inline" action="{% url 'mapgroups:leave' mapgroup.pk mapgroup.slug %}">
                         {% csrf_token %}
-                        <button class="btn btn-default" type="submit">Leave group</button>
+                        <button class="btn btn-success" type="submit">Leave group</button>
                     </form>
                 {% endif %}
 
@@ -47,7 +46,7 @@
                 {% if mapgroup.is_open %}
                     <form method="POST" style="display: inline" action="{% url 'mapgroups:join' mapgroup.pk mapgroup.slug %}">
                         {% csrf_token %}
-                        <p>Anyone may join this group.</p>
+                        <p>Welcome! This group is open for anyone to join.</p>
                         <button class="btn btn-success" type="submit">Join Group</button>
                     </form>
                 {% else %}
@@ -60,12 +59,7 @@
             {% endif %}
 
             {% if request.user == mapgroup.owner %}
-                <a class="btn btn-success" href="{% url 'mapgroups:edit' mapgroup.pk mapgroup.slug %}">Edit Map Group</a>
-
-                <form method="POST" style="display: inline" action="{% url 'mapgroups:delete' mapgroup.pk mapgroup.slug %}">
-                    {% csrf_token %}
-                    <button class="btn btn-danger" type="submit">Delete group</button>
-                </form>
+                <a class="btn btn-success" href="{% url 'mapgroups:edit' mapgroup.pk mapgroup.slug %}">Manage map group</a>
             {% endif %}
         </div>
 
@@ -93,7 +87,7 @@
             <h3>Shared Items</h3>
 
             {% if shared_items.bookmarks %}
-            <h4>Maps</h4>
+            <h4>Map Bookmarks</h4>
             <ul>
                 {% for object in shared_items.bookmarks %}
                     <li>{{ object.name }}</li> {# Bookmark url is object.url_hash #}
