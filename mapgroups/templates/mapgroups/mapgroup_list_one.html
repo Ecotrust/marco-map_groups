@@ -8,8 +8,8 @@
         <div class="media-left media-detail">
             <div class="media-inner">
                 <a href="{{ item.url }}">
-                    <div class="month">{{ mapgroup.creation_date|date:"m.Y" }}</div>
-                    <div class="badge">{{ mapgroup.mapgroupmember_set.count }}</div>
+                    <div class="month" title="Date Created">{{ mapgroup.creation_date|date:"m.Y" }}</div>
+                    <div class="badge" title="Number of Members">{{ mapgroup.mapgroupmember_set.count }}</div>
                 </a>
             </div>
         </div>
