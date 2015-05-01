@@ -1,9 +1,11 @@
 {% extends "base.html" %}
 
+{% block page_header %}
+    <a class="btn btn-success" href="{% url 'mapgroups:detail' mapgroup.pk mapgroup.slug %}">&larr; {{ mapgroup.name }}</a>
+{% endblock %}
+
 {% block content %}
 
-<script>
-</script>
             <style>
             .login-form {
                 margin-bottom: 1em;
@@ -24,52 +26,51 @@
                 position: absolute; padding: 10px 12px; cursor: default;
             }
             </style>
-<div style="border: 1px solid blue; margin: 1em 10em; padding: 3em">
-    <h3 style="text-align: center;">Update your Map Group.</h3>
+<div style=" margin: 0 10em 1em 10em; padding: 0 3em">
+    <h2 style="text-align: center;">Manage your map group</h2>
     <div>
-        <form style="display: none" method="POST" action="{% url 'mapgroups:remove-image' mapgroup.pk mapgroup.slug %}">
-            {% csrf_token %}
-            <input type="submit" id="remove-image-submit">
-        </form>
-
         <hr />
+
         <form class="login-form" method="POST" enctype="multipart/form-data" action="{% url 'mapgroups:edit' mapgroup.pk mapgroup.slug %}">
             {% csrf_token %}
             <div class="form-horizontal">
                 <div class="row">
                     <div class="form-group">
-                        <label for="{{ form.name.id_for_label }}" class="col-md-2">{{ form.name.label }}</label>
-                        <div class="col-md-10">
+                        <label for="{{ form.name.id_for_label }}" class="col-md-3">{{ form.name.label }}</label>
+                        <div class="col-md-9">
                             {{ form.name }}
                         </div>
                     </div>
                 </div>
                 <div class="row">
                     <div class="form-group">
-                        <label for="{{ form.blurb.id_for_label }}" class="col-md-2" class="form-control">Description</label>
-                        <div class="col-md-10">
+                        <label for="{{ form.blurb.id_for_label }}" class="col-md-3" class="form-control">Description</label>
+                        <div class="col-md-9">
                             {{ form.blurb }}
                         </div>
                     </div>
                 </div>
-                <div class="row">
+                <input type="hidden" name="is_open" value="1">
+                <!-- <div class="row">
                     <div class="form-group">
-                        <div class="col-md-2"></div>
-                        <div class="col-md-10">
+                        <div class="col-md-3"><label>Open, or Private?</label></div>
+                        <div class="col-md-9">
                             <div class="btn btn-default">
                                 <label>
                                     <input id="id_is_open" name="is_open" type="checkbox">
                                     Open Group
                                 </label>
                             </div>
+                            <p>Tip: Anyone can join an open group. Group owners
+                            approve private group membership requests.</p>
                         </div>
-                        <label for="{{ form.is_open.id_for_label }}" class="col-md-10"></label>
+                        <label for="{{ form.is_open.id_for_label }}" class="col-md-9"></label>
                     </div>
-                </div>
+                </div> -->
                 <div class="row">
                     <div class="form-group">
-                        <label for="{{ form.image.id_for_label }}" class="col-md-2">{{ form.image.label }}</label>
-                        <div class="col-md-10">
+                        <label for="{{ form.image.id_for_label }}" class="col-md-3">{{ form.image.label }}</label>
+                        <div class="col-md-9">
                             <div class="well">
                                 {% if mapgroup.image %}
                                 <label for=remove-image-submit class="btn btn-default btn-sm" style="position: absolute; right: 35px">
@@ -80,29 +81,52 @@
                             </div>
 
                             {{ form.image }}<br>
+                            Tip: the best image sizes are 345x195 or larger.
                         </div>
                     </div>
                 </div>
-                <div class="row">
-                    <hr>
+            </div>
 
-                    <div class="form-group">
-                    <div class="col-md-10 col-md-offset-3">
-                    <label cls=btn for="edit-form-submit" class="btn btn-success">Save Changes</label>
-                    <br />
-                    <br />
-                    <a class=btn href="{% url 'mapgroups:detail' mapgroup.pk mapgroup.slug %}">Cancel changes</a>
-                    </div>
-                    </div>
+            <div>
+                <div class="text-right">
+                    <a class="btn btn-inline" href="{% url 'mapgroups:detail' mapgroup.pk mapgroup.slug %}">Cancel changes</a>
+                    <label for="edit-form-submit" class="btn btn-success btn-inline">Save Changes</label>
                 </div>
             </div>
+        </form>
 
-            <div style="display:none">
-                <input type="submit" id="edit-form-submit">
+        <hr>
+        <h3>Other options</h3>
+        <h4>Delete your group</h4>
+        <style>
+            blockquote.warn {
+                border-left-color: #ea3a54;
+                background-color: #eee;
+            }
+        </style>
+        <form method="POST" style="display: inline" action="{% url 'mapgroups:delete' mapgroup.pk mapgroup.slug %}">
+            {% csrf_token %}
+            {# <button class="btn btn-success" onclick="$('#delete_group').toggle(); return false; ">Delete this group…</button> #}
+            <div id="delete_group">
+                <blockquote class="warn">
+                    <p>Deleting a group is permanent, and cannot be undone.</p>
+
+                    <p class="text-center">
+                    <button class="btn btn-danger" type="submit"  onclick='return confirm("Are you sure you want to delete your map group “{{ mapgroup.name }}”?")'>Delete group</button>
+                    </p>
+                </blockquote>
             </div>
         </form>
+
+        <div style="display:none">
+            <input type="submit" id="edit-form-submit">
+        </div>
     </div>
 </div>
 
+<form style="display: none" method="POST" action="{% url 'mapgroups:remove-image' mapgroup.pk mapgroup.slug %}">
+    {% csrf_token %}
+    <input type="submit" id="remove-image-submit">
+</form>
 
 {% endblock %}
