@@ -1,13 +1,83 @@
 {% extends "base.html" %}
 
+{% block page_header %}
+    <a class="btn btn-success" href="{% url 'mapgroups:list'%}">&larr; Groups</a>
+{% endblock %}
+
 {% block content %}
 
-<p>Create your own map group!</p>
-<form method="POST" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_div }}
-    {{ form.errors }}
-    <input type="submit" />
-</form>
+            <style>
+            .login-form {
+                margin-bottom: 1em;
+            }
+            .login-form > div {
+                width: 30em;
+                margin: 0 auto;
+            }
+            .login-form div + div {
+                padding-top: 1ex;
+            }
+            .login-form .form-control {
+                color: black;
+            }
+            .login-form .left-inner-addon { position: relative; }
+            .login-form .left-inner-addon input { padding-left: 30px; }
+            .login-form .left-inner-addon i {
+                position: absolute; padding: 10px 12px; cursor: default;
+            }
+            </style>
+<div style=" margin: 0 10em 1em 10em; padding: 0 3em">
+    <h2 style="text-align: center;">Create a map group</h2>
+    <div>
+        <hr />
+
+        <form class="login-form" method="POST" enctype="multipart/form-data"">
+            {% csrf_token %}
+            <div class="form-horizontal">
+                <div class="row">
+                    <div class="form-group">
+                        <label for="{{ form.name.id_for_label }}" class="col-md-3">{{ form.name.label }}</label>
+                        <div class="col-md-9">
+                            {{ form.name }}
+                            {{ form.name.errors }}
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group">
+                        <label for="{{ form.blurb.id_for_label }}" class="col-md-3" class="form-control">Description</label>
+                        <div class="col-md-9">
+                            {{ form.blurb }}
+                            {{ form.blurb.errors }}
+                        </div>
+                    </div>
+                </div>
+                <input type="hidden" name="is_open" value="1">
+                <div class="row">
+                    <div class="form-group">
+                        <label for="{{ form.image.id_for_label }}" class="col-md-3">{{ form.image.label }}</label>
+                        <div class="col-md-9">
+                            {{ form.image }}<br>
+                            {{ form.image.errors }}
+                            Tip: the best image sizes are 345x195 or larger.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <div class="text-right">
+                    <label>
+                        <button class="btn btn-success" type="submit">Create Group</button>
+                    </label>
+                </div>
+            </div>
+        </form>
+
+        <hr>
+        <div style="display:none">
+        </div>
+    </div>
+</div>
 
 {% endblock %}

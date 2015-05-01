@@ -24,11 +24,12 @@ class MapGroupCreate(FormView):
     template_name = 'mapgroups/mapgroup_form.html'
 
     def form_valid(self, form):
+        image = form.files.get('image', '')
         mg, member = MapGroup.objects.create(name=form.cleaned_data['name'],
                                              blurb=form.cleaned_data['blurb'],
                                              open=form.cleaned_data['is_open'],
                                              owner=self.request.user,
-                                             image=form.files['image'])
+                                             image=image)
         self.object = mg
 
         kwargs = {
