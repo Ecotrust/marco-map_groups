@@ -13,7 +13,7 @@ from mapgroups.actions import join_map_group, leave_non_owned_map_group, \
     delete_owned_map_group
 from mapgroups.forms import CreateGroupForm, JoinMapGroupActionForm, \
     RequestJoinMapGroupActionForm, EditMapGroupForm, MapGroupPreferencesForm, \
-    LeaveMapGroupActionForm, DeleteMapGroupActionForm
+    LeaveMapGroupActionForm, DeleteMapGroupActionForm, RemoveMapGroupImageForm
 from mapgroups.models import MapGroup, FeaturedGroups
 from nursery.view_helpers import decorate_view
 
@@ -220,6 +220,23 @@ class MapGroupEditView(FormView):
         mg.rename(form.cleaned_data['name'])
 
         return super(FormView, self).form_valid(form)
+
+@decorate_view(login_required)
+class RemoveMapGroupImageActionView(FormView):
+    template_name = None
+    form_class = RemoveMapGroupImageForm
+
+    def post(self, request, *args, **kwargs):
+        self.mapgroup = get_object_or_404(MapGroup, pk=kwargs['pk'], owner=request.user)
+        self.success_url = reverse('mapgroups:edit', kwargs=kwargs)
+        return super(RemoveMapGroupImageActionView, self).post(request, *args,
+                                                               **kwargs)
+
+    def form_valid(self, form):
+        self.mapgroup.image = ''
+        self.mapgroup.save()
+
+        return super(RemoveMapGroupImageActionView, self).form_valid(form)
 
 
 @decorate_view(login_required)
