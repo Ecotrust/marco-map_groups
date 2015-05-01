@@ -30,7 +30,8 @@ from mapgroups import rpc
 from mapgroups.views import MapGroupDetailView, \
     MapGroupCreate, MapGroupListView, JoinMapGroupActionView, \
     RequestJoinMapGroupActionView, MapGroupEditView, MapGroupPreferencesView, \
-    LeaveMapGroupActionView, DeleteMapGroupActionView
+    LeaveMapGroupActionView, DeleteMapGroupActionView, \
+    RemoveMapGroupImageActionView
 
 _urlpatterns = [
     # Map group urls look something like:
@@ -43,6 +44,8 @@ _urlpatterns = [
     url(r'^create$', MapGroupCreate.as_view(), name='create'),
     url(r'^(?P<pk>\d+)/(?P<slug>[\w-]+)/edit$',
         MapGroupEditView.as_view(), name='edit'),
+    url(r'^(?P<pk>\d+)/(?P<slug>[\w-]+)/edit/remove-image$',
+        RemoveMapGroupImageActionView.as_view(), name='remove-image'),
     url(r'^(?P<pk>\d+)/(?P<slug>[\w-]+)/$',
         MapGroupDetailView.as_view(), name='detail'),
     url(r'^(?P<pk>\d+)/(?P<slug>[\w-]+)/preferences$',

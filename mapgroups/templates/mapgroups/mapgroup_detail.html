@@ -9,6 +9,7 @@
 <style type="text/css">
     .well > img { width: 345px; height: 194px; }
     .well { display: inline-block; background-color: #b1b3b5; }
+    li { list-style-type: none; }
 </style>
 
 <div class="mapgroup">
@@ -74,7 +75,12 @@
             <form method="POST"
                   action="{% url 'mapgroups:preferences' mapgroup.pk mapgroup.slug %}">
                 {% csrf_token %}
-                {{ preferences_form.as_p }}
+                <!--{{ preferences_form.as_div }}-->
+
+                <label>
+                {{ preferences_form.show_real_name }} Share my real name with this group.
+                </label>
+
                 <script>
                     document.querySelector('#id_show_real_name').onclick = function() {
                         this.form.submit();
@@ -83,71 +89,63 @@
             </form>
         {% endif %}
 
-
-
         {% if shared_items %}
             <h3>Shared Items</h3>
+
+            {% if shared_items.bookmarks %}
+            <h4>Maps</h4>
             <ul>
-                {% if shared_items.bookmarks %}
-                <li>Shared Maps
-                    <ul>
-                        {% for object in shared_items.bookmarks %}
-                            <li>{{ object.name }}</li> {# Bookmark url is object.url_hash #}
-                        {% empty %}
-                            <li>No shared maps.</li>
-                        {% endfor %}
-                    </ul>
-                </li>
-                {% endif %}
-
-                {% if shared_items.scenarios %}
-                <li>Shared Scenarios
-                    <ul>
-                        {% for object in shared_items.scenarios %}
-                            <li>{{ object.name }}</li>
-                        {% empty %}
-                            <li>No shared scenarios.</li>
-                        {% endfor %}
-                    </ul>
-                </li>
-                {% endif %}
-
-                {% if shared_items.leaseblock_selections %}
-                <li>Shared Lease Block Selections
-                    <ul>
-                        {% for object in shared_items.leaseblock_selections %}
-                            <li>{{ object.name }}</li>
-                        {% empty %}
-                            <li>No shared lease block selections.</li>
-                        {% endfor %}
-                    </ul>
-                </li>
-                {% endif %}
-
-                {% if shared_items.drawings %}
-                <li>Shared Drawings
-                    <ul>
-                        {% for object in shared_items.drawings %}
-                            <li>{{ object.name }}</li>
-                        {% empty %}
-                            <li>No shared drawings.</li>
-                        {% endfor %}
-                    </ul>
-                </li>
-                {% endif %}
-
-                {% if shared_items.windenergysites %}
-                <li>Shared Wind Energy Sites
-                    <ul>
-                        {% for object in shared_items.windenergysites %}
-                            <li>{{ object.name }}</li>
-                        {% empty %}
-                            <li>No shared wind energy sites.</li>
-                        {% endfor %}
-                    </ul>
-                </li>
-                {% endif %}
+                {% for object in shared_items.bookmarks %}
+                    <li>{{ object.name }}</li> {# Bookmark url is object.url_hash #}
+                {% empty %}
+                    <li>No shared maps.</li>
+                {% endfor %}
             </ul>
+            {% endif %}
+
+            {% if shared_items.scenarios %}
+            <h4>Scenarios</h4>
+            <ul>
+                {% for object in shared_items.scenarios %}
+                    <li>{{ object.name }}</li>
+                {% empty %}
+                    <li>No shared scenarios.</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+
+            {% if shared_items.leaseblock_selections %}
+            <h4>Lease Block Selections</h4>
+            <ul>
+                {% for object in shared_items.leaseblock_selections %}
+                    <li>{{ object.name }}</li>
+                {% empty %}
+                    <li>No shared lease block selections.</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+
+            {% if shared_items.drawings %}
+            <h4>Drawings</h4>
+            <ul>
+                {% for object in shared_items.drawings %}
+                    <li>{{ object.name }}</li>
+                {% empty %}
+                    <li>No shared drawings.</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+
+            {% if shared_items.windenergysites %}
+            <h4>Wind Energy Sites</h4>
+            <ul>
+                {% for object in shared_items.windenergysites %}
+                    <li>{{ object.name }}</li>
+                {% empty %}
+                    <li>No shared wind energy sites.</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
         {% endif %}
     </div>
 
