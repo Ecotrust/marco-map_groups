@@ -94,23 +94,32 @@ class MapGroupListView(ListView):
 
 @decorate_view(login_required)
 class JoinMapGroupActionView(FormView):
+    """FormView to join a map group.
+    It has a slightly modified flow, since there are, in fact, no form fields.
+    After get/post, the user is merely redirected to the appropriate url.
+    """
     template_name = None
     form_class = JoinMapGroupActionForm
 
-    def post(self, request, *args, **kwargs):
-        # can't define the success_url on the class, since we don't know which
-        # mapgroup it is until the post
+    def handle(self, request, *args, **kwargs):
         self.mapgroup = MapGroup.objects.get(pk=kwargs['pk'])
         self.success_url = reverse('mapgroups:detail', kwargs=kwargs)
-        return super(JoinMapGroupActionView, self).post(request, *args, **kwargs)
 
-    def form_valid(self, form):
         member = join_map_group(self.request.user, self.mapgroup)
         if not member:
             # then it's a closed group and we need an invite
             pass
 
-        return super(JoinMapGroupActionView, self).form_valid(form)
+        return HttpResponseRedirect(self.success_url)
+
+    def get(self, request, *args, **kwargs):
+        """Get needed to allow non-logged in users to join a group immediately
+        after login.
+        """
+        return self.handle(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        return self.handle(request, *args, **kwargs)
 
 
 @decorate_view(login_required)
