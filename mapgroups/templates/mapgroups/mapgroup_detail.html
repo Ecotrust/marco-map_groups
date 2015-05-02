@@ -44,7 +44,9 @@
 
             {% else %}
                 {% if mapgroup.is_open %}
-                    <form method="POST" style="display: inline" action="{% url 'mapgroups:join' mapgroup.pk mapgroup.slug %}">
+                    {# Anonymous users must use GET, otherwise the request will #}
+                    {# be lost in the all the login redirects #}
+                    <form method="{% if request.user.is_anonymous %}GET{% else %}POST{% endif %}" style="display: inline" action="{% url 'mapgroups:join' mapgroup.pk mapgroup.slug %}">
                         {% csrf_token %}
                         <p>Welcome! This group is open for anyone to join.</p>
                         <button class="btn btn-success" type="submit">Join Group</button>

@@ -90,7 +90,10 @@
             <div>
                 <div class="text-right">
                     <a class="btn btn-inline" href="{% url 'mapgroups:detail' mapgroup.pk mapgroup.slug %}">Cancel changes</a>
-                    <label for="edit-form-submit" class="btn btn-success btn-inline">Save Changes</label>
+                    <label class="btn btn-success">
+                        <input style="display: none" type="submit">
+                        Save Changes
+                    </label>
                 </div>
             </div>
         </form>
@@ -117,10 +120,6 @@
                 </blockquote>
             </div>
         </form>
-
-        <div style="display:none">
-            <input type="submit" id="edit-form-submit">
-        </div>
     </div>
 </div>
 
