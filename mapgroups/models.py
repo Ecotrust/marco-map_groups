@@ -73,6 +73,7 @@ class MapGroup(models.Model):
     name = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255)
     owner = models.ForeignKey(User)
+    creation_date = models.DateTimeField(auto_now_add=True)
 #     icon = models.URLField()
     image = models.ImageField(upload_to=map_group_image_path, #'group_images/%Y%m%d/',
                               width_field='image_width',
@@ -89,6 +90,18 @@ class MapGroup(models.Model):
     not_featured = MapGroupNonFeaturedManager()
     featured = MapGroupFeaturedManager()
 
+    _original_image_name = None
+
+
+    def __init__(self, *args, **kwargs):
+        super(MapGroup, self).__init__(*args, **kwargs)
+
+        # Save a copy for later so we can see if it changed
+        # The ImageField's file is bound to the model field itself, so to
+        # delete the file on change, we must capture the file name and the
+        # storage object.
+        self._original_image_name = self.image.name
+
     def __str__(self):
         s = "Map Group '%s'" % self.name
 
@@ -97,8 +110,103 @@ class MapGroup(models.Model):
         return s
 
     def save(self, *args, **kwargs):
+        self._process_uploaded_image()
         self.slug = slugify(unicode(self.name))
-        return super(MapGroup, self).save(*args, **kwargs)
+        super(MapGroup, self).save(*args, **kwargs)
+
+        # Reset the stored image name
+        self._original_image_name = self.image.name
+
+    def _process_uploaded_image(self):
+        """Handle image uploading.
+
+        Images are all smartly resized to fit into the 345x194-hard-coded frame
+        for list views.
+
+        Also, all images are re-rendered as JPEG. This is done to keep size down
+        as well as hopefully against any future attack vectors that might
+        exploit rendering bugs in a client's image rendering library.
+
+        If a transparent image (something with an alpha channel) is uploaded,
+        the transparent areas will be replaced with solid white. This may be
+        undesirable, so a future modification might need to turn this into a PNG
+        so transparency is preserved.
+
+        Doing the image processing is done inside the model rather than the form
+        means that images uploaded in the django admin will also be properly
+        resized.
+
+        Bulk loads will skip processing (since they don't call the save method),
+        but a bulk load will hopefully be accompanied by a bulk copy of the
+        group images too.
+
+        Uses the _original_image_name property to detect whether or not image
+        processing should occur.
+
+        Also, we try to be memory conservative by removing extra copies of
+        images as soon as possible.
+        """
+        if self.image.name == self._original_image_name:
+            # the image didn't change, so do nothing
+            return
+
+        # Delete the prior image if it exists.
+        if self._original_image_name:
+            self.image.storage.delete(self._original_image_name)
+
+        # if there's no image, we're done.  
+        if not self.image.name:
+            return
+
+        # The image is different, so process the new one and delete the old
+        # one.
+
+        # Resize
+        from PIL import Image, ImageColor, ImageOps
+        from io import BytesIO
+
+        uploaded_image = Image.open(self.image.file)
+
+        # Fit image to size, centering in the middle width and top 2/5 height
+        fit_uploaded_image = ImageOps.fit(uploaded_image, (345, 194),
+                                          centering=(1 / 2., 2 / 5.))
+        del uploaded_image
+
+        # Account for images with transparency by rendering them on a white
+        # background. Currently we're only producing JPEGs, but I suppose
+        # we could use PNGs if preserving transparency becomes necessary.
+        mask = None
+        if fit_uploaded_image.mode == 'RGBA':
+            mask = fit_uploaded_image
+
+        group_image = Image.new('RGB', (345, 194), ImageColor.getrgb('white'))
+        group_image.paste(fit_uploaded_image, mask=mask)
+        group_image_data = BytesIO()
+        group_image.save(group_image_data, 'JPEG')
+        del group_image
+
+        # Uploaded files come in (at least) two flavors:
+        # InMemoryUploadedFile and TemporaryUploadedFile
+        #
+        # In order to save our modifications, we're just reaching in to the File
+        #  data structure and altering it's. contents. Becaause of that, it
+        # makes sense to be aware of the consequences.
+        #
+        # The file attribute is either a BytesIO or a NamedTemporaryFile.
+        # Fortunately, both of these objects die gracefully; the BytesIO
+        # will simply disappear, and the NamedTemporaryFile is only allowed
+        # to exist while it's open. Thus, just dumping the existing file
+        # will work to replace the image with the proper sized version of
+        # itself.
+        #
+        # However, replacing the ImageField's File's file will break if
+        # the internals are changed in some future django. For now, though,
+        # I can't find an better way to alter the contents of the uploaded
+        # file without writing it to disk first, and this works pretty well.
+
+        group_image_data.seek(0)
+        self.image.file.file = group_image_data
+
 
     def rename(self, new_name):
         """Rename the mapgroup and it's associated permission group.
@@ -126,6 +234,9 @@ class MapGroup(models.Model):
             return self.mapgroupmember_set.get(user=user)
         except MapGroupMember.DoesNotExist:
             return None
+
+    def get_owner_membership(self):
+        return self.owner.mapgroupmember_set.get(map_group_id=self.id)
 
     def _permission_group_name(self):
         """Compute the name of the permission group associated with this map

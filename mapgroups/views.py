@@ -13,7 +13,7 @@ from mapgroups.actions import join_map_group, leave_non_owned_map_group, \
     delete_owned_map_group
 from mapgroups.forms import CreateGroupForm, JoinMapGroupActionForm, \
     RequestJoinMapGroupActionForm, EditMapGroupForm, MapGroupPreferencesForm, \
-    LeaveMapGroupActionForm, DeleteMapGroupActionForm
+    LeaveMapGroupActionForm, DeleteMapGroupActionForm, RemoveMapGroupImageForm
 from mapgroups.models import MapGroup, FeaturedGroups
 from nursery.view_helpers import decorate_view
 
@@ -24,12 +24,12 @@ class MapGroupCreate(FormView):
     template_name = 'mapgroups/mapgroup_form.html'
 
     def form_valid(self, form):
-        print("MapGroupCreate:form_valid, because you're smart")
+        image = form.files.get('image', '')
         mg, member = MapGroup.objects.create(name=form.cleaned_data['name'],
                                              blurb=form.cleaned_data['blurb'],
                                              open=form.cleaned_data['is_open'],
                                              owner=self.request.user,
-                                             image=form.files['image'])
+                                             image=image)
         self.object = mg
 
         kwargs = {
@@ -57,7 +57,7 @@ class MapGroupDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super(MapGroupDetailView, self).get_context_data(**kwargs)
         context['title'] = self.object.name
-
+        context['owner'] = self.object.get_owner_membership()
         context['user_is_member'] = self.object.has_member(self.request.user)
         context['membership'] = self.object.get_member(self.request.user)
         if context['membership']:
@@ -76,7 +76,10 @@ class MapGroupDetailView(DetailView):
         shared_items['leaseblock_selections'] = pg.scenarios_leaseblockselection_related.all()
         shared_items['drawings'] = pg.drawing_aoi_related.all()
         shared_items['windenergysites'] = pg.drawing_windenergysite_related.all()
-        context['shared_items'] = shared_items
+
+        if any(shared_items.values()):
+            context['shared_items'] = shared_items
+
         return context
 
 
@@ -92,23 +95,32 @@ class MapGroupListView(ListView):
 
 @decorate_view(login_required)
 class JoinMapGroupActionView(FormView):
+    """FormView to join a map group.
+    It has a slightly modified flow, since there are, in fact, no form fields.
+    After get/post, the user is merely redirected to the appropriate url.
+    """
     template_name = None
     form_class = JoinMapGroupActionForm
 
-    def post(self, request, *args, **kwargs):
-        # can't define the success_url on the class, since we don't know which
-        # mapgroup it is until the post
+    def handle(self, request, *args, **kwargs):
         self.mapgroup = MapGroup.objects.get(pk=kwargs['pk'])
         self.success_url = reverse('mapgroups:detail', kwargs=kwargs)
-        return super(JoinMapGroupActionView, self).post(request, *args, **kwargs)
 
-    def form_valid(self, form):
         member = join_map_group(self.request.user, self.mapgroup)
         if not member:
             # then it's a closed group and we need an invite
             pass
 
-        return super(JoinMapGroupActionView, self).form_valid(form)
+        return HttpResponseRedirect(self.success_url)
+
+    def get(self, request, *args, **kwargs):
+        """Get needed to allow non-logged in users to join a group immediately
+        after login.
+        """
+        return self.handle(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        return self.handle(request, *args, **kwargs)
 
 
 @decorate_view(login_required)
@@ -218,6 +230,23 @@ class MapGroupEditView(FormView):
         mg.rename(form.cleaned_data['name'])
 
         return super(FormView, self).form_valid(form)
+
+@decorate_view(login_required)
+class RemoveMapGroupImageActionView(FormView):
+    template_name = None
+    form_class = RemoveMapGroupImageForm
+
+    def post(self, request, *args, **kwargs):
+        self.mapgroup = get_object_or_404(MapGroup, pk=kwargs['pk'], owner=request.user)
+        self.success_url = reverse('mapgroups:edit', kwargs=kwargs)
+        return super(RemoveMapGroupImageActionView, self).post(request, *args,
+                                                               **kwargs)
+
+    def form_valid(self, form):
+        self.mapgroup.image = ''
+        self.mapgroup.save()
+
+        return super(RemoveMapGroupImageActionView, self).form_valid(form)
 
 
 @decorate_view(login_required)
