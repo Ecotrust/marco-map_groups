@@ -35,6 +35,8 @@ DATABASES = {
     }
 }
 
+USE_TZ = True
+
 ROOT_URLCONF = 'tests.urls'
 
 SHARING_TO_PUBLIC_GROUPS = ['Share with Public']
