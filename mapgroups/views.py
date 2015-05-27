@@ -1,4 +1,3 @@
-from django import template
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.http.response import HttpResponse, HttpResponseRedirect, \
@@ -88,11 +87,6 @@ class MapGroupDetailView(DetailView):
         context['sorted_member_list'] = members
 
         return context
-
-
-
-
-
 
 class MapGroupListView(ListView):
     model = MapGroup
