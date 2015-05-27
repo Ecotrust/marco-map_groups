@@ -1,3 +1,4 @@
+from django import template
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.http.response import HttpResponse, HttpResponseRedirect, \
@@ -80,7 +81,17 @@ class MapGroupDetailView(DetailView):
         if any(shared_items.values()):
             context['shared_items'] = shared_items
 
+        members = self.object.mapgroupmember_set.exclude(user=self.object.owner)
+        members = list(members)
+        members.sort(key=lambda x: x.user_name_for_user(self.request.user).lower())
+        members.insert(0, self.object.get_owner_membership())
+        context['sorted_member_list'] = members
+
         return context
+
+
+
+
 
 
 class MapGroupListView(ListView):
