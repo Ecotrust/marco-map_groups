@@ -58,8 +58,6 @@ _urlpatterns = [
         DeleteMapGroupActionView.as_view(), name='delete'),
     url(r'^(?P<pk>\d+)/(?P<slug>[\w-]+)/join$',
         RequestJoinMapGroupActionView.as_view(), name='request-join'),
-
-    url(r'^rpc/', include(rpc.urls, namespace='rpc')),
 ]
 
 def urls(namespace='mapgroups'):
