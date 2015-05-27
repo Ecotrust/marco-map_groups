@@ -24,7 +24,7 @@ def get_sharing_groups(request):
 
     return data
 
-@rpcmethod()
+@rpcmethod(login_required=True)
 def update_map_group(group_id, options, **kwargs):
     request = kwargs.get('request')
     mg = get_object_or_404(MapGroup, id=group_id, owner=request.user)
