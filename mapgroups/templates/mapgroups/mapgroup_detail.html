@@ -20,7 +20,9 @@
 
     <div class="col-md-8">
         <h1 style="margin-top: 0; width: initial; border-left: 1px solid #b1b3b5; margin-left: -12px; padding-left: 12px">{{ mapgroup.name }}</h1>
-        <p>{{ mapgroup.blurb }}</p>
+        <div class="description">
+            <p class='rich-text'>{{ mapgroup.blurb }}</p>
+        </div>
 
         <h3>Group Information</h3>
         <p><strong>Group since:</strong> {{ mapgroup.creation_date|date }}</p>
