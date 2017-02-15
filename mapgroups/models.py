@@ -69,7 +69,11 @@ def map_group_image_path(instance, filename):
     return '%s/%s%s' % (base, name, ext)
 
 
+
 class MapGroup(models.Model):
+    class Meta:
+        app_label = "mapgroups"
+
     name = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255)
     owner = models.ForeignKey(User)
@@ -82,7 +86,7 @@ class MapGroup(models.Model):
     image_height = models.PositiveSmallIntegerField(default=0, blank=True, null=True)
     blurb = models.CharField(max_length=512)    # how long?
     permission_group = models.ForeignKey(Group, unique=True)
-    
+
     is_open = models.BooleanField(default=False, help_text=("If false, users "
         "must be invited or request to join this group"))
 
@@ -154,7 +158,7 @@ class MapGroup(models.Model):
         if self._original_image_name:
             self.image.storage.delete(self._original_image_name)
 
-        # if there's no image, we're done.  
+        # if there's no image, we're done.
         if not self.image.name:
             return
 
@@ -259,12 +263,13 @@ class MapGroup(models.Model):
 class MapGroupMember(models.Model):
     class Meta:
         unique_together = (('user', 'map_group',),)
+        app_label = "mapgroups"
 
     user = models.ForeignKey(User)
     map_group = models.ForeignKey(MapGroup)
 
     date_joined = models.DateTimeField(auto_now_add=True)
-    
+
     # permissions
     # is_owner = models.BooleanField(default=False, help_text=("If true, this "
     #                                "user is the group's creator."))
@@ -306,11 +311,17 @@ class MapGroupMember(models.Model):
 
 
 class FeaturedGroupsManager(models.Manager):
+    class Meta:
+        app_label = "mapgroups"
+
     def get_queryset(self):
         return super(FeaturedGroupsManager, self).get_queryset().order_by('rank')
 
 
 class FeaturedGroups(models.Model):
+    class Meta:
+        app_label = "mapgroups"
+
     rank = models.PositiveIntegerField(unique=True)
     # Note: unique FK here rather than 1:1, since the interface is a little
     # nicer in this case. You can say:
@@ -325,6 +336,9 @@ class FeaturedGroups(models.Model):
 
 
 class RecentActivityManager(models.Manager):
+    class Meta:
+        app_label = "mapgroups"
+
     def get_queryset(self):
         qs = super(RecentActivityManager, self).get_queryset()
         seven_days_ago = datetime.datetime.now() - datetime.timedelta(days=7)
@@ -335,13 +349,15 @@ class RecentActivityManager(models.Manager):
 class ActivityLog(models.Model):
     """Record for events that have happened in this group.
     """
-    
+    class Meta:
+        app_label = "mapgroups"
+
     group = models.ForeignKey(MapGroup)
     message = models.CharField(max_length=256)
     date_created = models.DateTimeField(auto_now_add=True)
     admin = models.BooleanField(default=False, help_text=("If true, this"
                                 " message is only viewable by managers."))
-    associated_user = models.ForeignKey(User, null=True, blank=True, 
+    associated_user = models.ForeignKey(User, null=True, blank=True,
                                         help_text=("The user this message is "
                                                    "associated with, if any."))
 
@@ -350,12 +366,15 @@ class ActivityLog(models.Model):
 
 
 class Invitation(models.Model):
-    """A model to store user requests to join an invitation-only group, or 
+    """A model to store user requests to join an invitation-only group, or
     admin invitations to a user.
-    
+
     User selects "Join group"
     If that group is "open"
     """
+    class Meta:
+        app_label = "mapgroups"
+
     user = models.ForeignKey(User)
     group = models.ForeignKey(MapGroup)
     message = models.CharField(max_length=512, blank=True)
@@ -363,11 +382,11 @@ class Invitation(models.Model):
 
 
 class EmailInvitation(models.Model):
+    class Meta:
+        app_label = "mapgroups"
+
     to_address = models.EmailField()
     map_group = models.ForeignKey(MapGroup)
     invite_code = models.CharField(max_length=32)
     invited_by = models.ForeignKey(MapGroupMember)
     date_sent = models.DateTimeField(auto_now_add=True)
-
-
-

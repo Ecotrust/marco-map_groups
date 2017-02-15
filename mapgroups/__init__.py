@@ -1,1 +1,1 @@
-from rpc import *
+from mapgroups.rpc import *
