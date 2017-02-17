@@ -5,7 +5,6 @@ SRH May-2015
 """
 from django.shortcuts import get_object_or_404
 from rpc4django import rpcmethod
-from mapgroups.models import MapGroup
 
 @rpcmethod(login_required=True)
 def get_sharing_groups(request):
@@ -26,6 +25,7 @@ def get_sharing_groups(request):
 
 @rpcmethod(login_required=True)
 def update_map_group(group_id, options, **kwargs):
+    from mapgroups.models import MapGroup
     request = kwargs.get('request')
     mg = get_object_or_404(MapGroup, id=group_id, owner=request.user)
     changed = False
