@@ -34,7 +34,7 @@
         </p>
 
         <div>
-            {# Group action buttons #}
+            <!-- Group action buttons -->
 
             {% if user_is_member %}
                 {% if request.user != mapgroup.owner %}
@@ -46,8 +46,10 @@
 
             {% else %}
                 {% if mapgroup.is_open %}
-                    {# Anonymous users must use GET, otherwise the request will #}
-                    {# be lost in the all the login redirects #}
+                    <!--
+                      Anonymous users must use GET, otherwise the request will
+                      be lost in the all the login redirects
+                    -->
                     <form method="{% if request.user.is_anonymous %}GET{% else %}POST{% endif %}" style="display: inline" action="{% url 'mapgroups:join' mapgroup.pk mapgroup.slug %}">
                         {% csrf_token %}
                         <p>Welcome! This group is open for anyone to join.</p>
@@ -94,7 +96,7 @@
             <h4>Map Bookmarks</h4>
             <ul>
                 {% for object in shared_items.bookmarks %}
-                    <li>{{ object.name }}</li> {# Bookmark url is object.url_hash #}
+                    <li>{{ object.name }}</li> <!-- Bookmark url is object.url_hash -->
                 {% empty %}
                     <li>No shared maps.</li>
                 {% endfor %}
@@ -160,7 +162,7 @@
                     <b>{{ member.user.get_short_name }}</b> <!-- Show pref name -->
                 {% endif %}
 
-                {# call out the current user and owner of the group #}
+                <!-- call out the current user and owner of the group -->
                 {% if request.user == member.user %}
                     (you{% if request.user == mapgroup.owner %}, owner{% endif %})
                 {% else %}
