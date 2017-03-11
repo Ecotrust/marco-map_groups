@@ -85,7 +85,7 @@ class MapGroup(models.Model):
     image_width = models.PositiveSmallIntegerField(default=0, blank=True, null=True)
     image_height = models.PositiveSmallIntegerField(default=0, blank=True, null=True)
     blurb = models.CharField(max_length=512)    # how long?
-    permission_group = models.ForeignKey(Group, unique=True)
+    permission_group = models.OneToOneField(Group)
 
     is_open = models.BooleanField(default=False, help_text=("If false, users "
         "must be invited or request to join this group"))
@@ -329,7 +329,7 @@ class FeaturedGroups(models.Model):
     # instead of:
     # >>> fg = FeaturedGroup.create(rank=4)
     # >>> mapgroup.featuredgroup = fg
-    map_group = models.ForeignKey(MapGroup, unique=True)
+    map_group = models.OneToOneField(MapGroup)
 
     def __str__(self):
         return "#%d %s" % (self.rank, self.map_group.name)
