@@ -1,1 +1,2 @@
 rpc4django
+Pillow
