@@ -3,7 +3,7 @@ JSON-RPC endpoint for mapgroups.
 
 SRH May-2015
 """
-from django.shortcuts import get_object_or_404
+
 from rpc4django import rpcmethod
 from mapgroups.models import MapGroup
 
@@ -26,6 +26,7 @@ def get_sharing_groups(request):
 
 @rpcmethod(login_required=True)
 def update_map_group(group_id, options, **kwargs):
+    from django.shortcuts import get_object_or_404
     request = kwargs.get('request')
     mg = get_object_or_404(MapGroup, id=group_id, owner=request.user)
     changed = False
