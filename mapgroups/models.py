@@ -76,7 +76,7 @@ class MapGroup(models.Model):
 
     name = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255)
-    owner = models.ForeignKey(User)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE)
     creation_date = models.DateTimeField(auto_now_add=True)
 #     icon = models.URLField()
     image = models.ImageField(upload_to=map_group_image_path, #'group_images/%Y%m%d/',
@@ -85,7 +85,7 @@ class MapGroup(models.Model):
     image_width = models.PositiveSmallIntegerField(default=0, blank=True, null=True)
     image_height = models.PositiveSmallIntegerField(default=0, blank=True, null=True)
     blurb = models.CharField(max_length=512)    # how long?
-    permission_group = models.ForeignKey(Group, unique=True)
+    permission_group = models.ForeignKey(Group, unique=True, on_delete=models.CASCADE)
 
     is_open = models.BooleanField(default=False, help_text=("If false, users "
         "must be invited or request to join this group"))
@@ -265,8 +265,8 @@ class MapGroupMember(models.Model):
         unique_together = (('user', 'map_group',),)
         app_label = "mapgroups"
 
-    user = models.ForeignKey(User)
-    map_group = models.ForeignKey(MapGroup)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    map_group = models.ForeignKey(MapGroup, on_delete=models.CASCADE)
 
     date_joined = models.DateTimeField(auto_now_add=True)
 
@@ -329,7 +329,7 @@ class FeaturedGroups(models.Model):
     # instead of:
     # >>> fg = FeaturedGroup.create(rank=4)
     # >>> mapgroup.featuredgroup = fg
-    map_group = models.ForeignKey(MapGroup, unique=True)
+    map_group = models.ForeignKey(MapGroup, unique=True, on_delete=models.CASCADE)
 
     def __str__(self):
         return "#%d %s" % (self.rank, self.map_group.name)
@@ -352,14 +352,15 @@ class ActivityLog(models.Model):
     class Meta:
         app_label = "mapgroups"
 
-    group = models.ForeignKey(MapGroup)
+    group = models.ForeignKey(MapGroup, on_delete=models.CASCADE)
     message = models.CharField(max_length=256)
     date_created = models.DateTimeField(auto_now_add=True)
     admin = models.BooleanField(default=False, help_text=("If true, this"
                                 " message is only viewable by managers."))
     associated_user = models.ForeignKey(User, null=True, blank=True,
                                         help_text=("The user this message is "
-                                                   "associated with, if any."))
+                                                   "associated with, if any."),
+                                        on_delete=models.SET_NULL)
 
     recent = RecentActivityManager()
     objects = models.Manager()
@@ -375,8 +376,8 @@ class Invitation(models.Model):
     class Meta:
         app_label = "mapgroups"
 
-    user = models.ForeignKey(User)
-    group = models.ForeignKey(MapGroup)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    group = models.ForeignKey(MapGroup, on_delete=models.CASCADE)
     message = models.CharField(max_length=512, blank=True)
     date_created = models.DateTimeField(auto_now_add=True)
 
@@ -386,7 +387,7 @@ class EmailInvitation(models.Model):
         app_label = "mapgroups"
 
     to_address = models.EmailField()
-    map_group = models.ForeignKey(MapGroup)
+    map_group = models.ForeignKey(MapGroup, on_delete=models.CASCADE)
     invite_code = models.CharField(max_length=32)
-    invited_by = models.ForeignKey(MapGroupMember)
+    invited_by = models.ForeignKey(MapGroupMember, on_delete=models.CASCADE)
     date_sent = models.DateTimeField(auto_now_add=True)
