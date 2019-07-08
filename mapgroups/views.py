@@ -1,5 +1,5 @@
 from django.contrib.auth.decorators import login_required
-from django.core.urlresolvers import reverse, reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.http.response import HttpResponse, HttpResponseRedirect, \
     HttpResponseNotFound
 from django.shortcuts import get_object_or_404

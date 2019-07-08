@@ -4,7 +4,7 @@ import json
 from django.contrib import auth
 from django.core.files.uploadedfile import InMemoryUploadedFile, \
     SimpleUploadedFile
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.contrib.auth.models import User, Group
 from django.db import IntegrityError
 from django.http import JsonResponse

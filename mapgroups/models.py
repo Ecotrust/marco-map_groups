@@ -4,7 +4,7 @@ from django.templatetags.static import static
 import os
 from django.contrib.auth.models import User, Group
 from django.db import models
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.shortcuts import get_object_or_404
 from django.utils.crypto import get_random_string
 from django.utils.text import slugify
