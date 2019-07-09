@@ -25,7 +25,8 @@ Usage:
     urls(r'^mount_point/', include(map_groups.urls.urls('Project Name Space'))
 """
 
-from django.conf.urls import url, include
+# from django.conf.urls import url, include
+from django.urls import re_path, include
 from mapgroups import rpc
 from mapgroups.views import MapGroupDetailView, \
     MapGroupCreate, MapGroupListView, JoinMapGroupActionView, \
@@ -33,30 +34,30 @@ from mapgroups.views import MapGroupDetailView, \
     LeaveMapGroupActionView, DeleteMapGroupActionView, \
     RemoveMapGroupImageActionView
 
-_urlpatterns = [
+urlpatterns = [
     # Map group urls look something like:
     #   midatlanticoceans.org/g/49/swiftly-sinking-sailfish
     # but
     #   midatlanticoceans.org/g/49
     # will also work
 
-    url(r'^$', MapGroupListView.as_view(), name='list'),
-    url(r'^create$', MapGroupCreate.as_view(), name='create'),
-    url(r'^(?P<pk>\d+)/(?P<slug>[\w-]+)/edit$',
+    re_path(r'^$', MapGroupListView.as_view(), name='list'),
+    re_path(r'^create$', MapGroupCreate.as_view(), name='create'),
+    re_path(r'^(?P<pk>\d+)/(?P<slug>[\w-]+)/edit$',
         MapGroupEditView.as_view(), name='edit'),
-    url(r'^(?P<pk>\d+)/(?P<slug>[\w-]+)/edit/remove-image$',
+    re_path(r'^(?P<pk>\d+)/(?P<slug>[\w-]+)/edit/remove-image$',
         RemoveMapGroupImageActionView.as_view(), name='remove-image'),
-    url(r'^(?P<pk>\d+)/(?P<slug>[\w-]+)/$',
+    re_path(r'^(?P<pk>\d+)/(?P<slug>[\w-]+)/$',
         MapGroupDetailView.as_view(), name='detail'),
-    url(r'^(?P<pk>\d+)/(?P<slug>[\w-]+)/preferences$',
+    re_path(r'^(?P<pk>\d+)/(?P<slug>[\w-]+)/preferences$',
         MapGroupPreferencesView.as_view(), name='preferences'),
-    url(r'^(?P<pk>\d+)/(?P<slug>[\w-]+)/join$',
+    re_path(r'^(?P<pk>\d+)/(?P<slug>[\w-]+)/join$',
         JoinMapGroupActionView.as_view(), name='join'),
-    url(r'^(?P<pk>\d+)/(?P<slug>[\w-]+)/leave$',
+    re_path(r'^(?P<pk>\d+)/(?P<slug>[\w-]+)/leave$',
         LeaveMapGroupActionView.as_view(), name='leave'),
-    url(r'^(?P<pk>\d+)/(?P<slug>[\w-]+)/delete$',
+    re_path(r'^(?P<pk>\d+)/(?P<slug>[\w-]+)/delete$',
         DeleteMapGroupActionView.as_view(), name='delete'),
-    url(r'^(?P<pk>\d+)/(?P<slug>[\w-]+)/join$',
+    re_path(r'^(?P<pk>\d+)/(?P<slug>[\w-]+)/join$',
         RequestJoinMapGroupActionView.as_view(), name='request-join'),
 ]
 
@@ -66,5 +67,4 @@ def urls(namespace='mapgroups'):
     The including module or project can refer to urls as namespace:urlname,
     internally, they are referred to as app_name:urlname.
     """
-    return (_urlpatterns, 'mapgroups', namespace)
-
+    return (urlpatterns, 'mapgroups', namespace)
