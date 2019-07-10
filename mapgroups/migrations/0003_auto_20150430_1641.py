@@ -23,7 +23,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='mapgroup',
             name='image',
-            field=models.ImageField(height_field=b'image_height', width_field=b'image_width', null=True, upload_to=mapgroups.models.map_group_image_path, blank=True),
+            field=models.ImageField(height_field='image_height', width_field='image_width', null=True, upload_to=mapgroups.models.map_group_image_path, blank=True),
             preserve_default=True,
         ),
         migrations.AlterField(

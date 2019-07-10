@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='mapgroup',
             name='image',
-            field=models.ImageField(height_field=b'image_height', width_field=b'image_width', null=True, upload_to=b'group_images/%Y%m%d/'),
+            field=models.ImageField(height_field='image_height', width_field='image_width', null=True, upload_to='group_images/%Y%m%d/'),
             preserve_default=True,
         ),
         migrations.AddField(

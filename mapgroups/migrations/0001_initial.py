@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 from django.db import models, migrations
 from django.conf import settings
+import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
@@ -19,8 +20,8 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('message', models.CharField(max_length=256)),
                 ('date_created', models.DateTimeField(auto_now_add=True)),
-                ('admin', models.BooleanField(default=False, help_text=b'If true, this message is only viewable by managers.')),
-                ('associated_user', models.ForeignKey(blank=True, to=settings.AUTH_USER_MODEL, help_text=b'The user this message is associated with, if any.', null=True)),
+                ('admin', models.BooleanField(default=False, help_text='If true, this message is only viewable by managers.')),
+                ('associated_user', models.ForeignKey(blank=True, to=settings.AUTH_USER_MODEL, help_text='The user this message is associated with, if any.', null=True, on_delete=django.db.models.deletion.SET_NULL)),
             ],
             options={
             },
@@ -65,10 +66,10 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('name', models.CharField(max_length=255)),
                 ('slug', models.SlugField(max_length=255)),
-                ('blurb', models.CharField(max_length=512)),
-                ('is_open', models.BooleanField(default=False, help_text=b'If false, users must be invited or request to join this group')),
-                ('owner', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
-                ('permission_group', models.ForeignKey(to='auth.Group', unique=True)),
+                ('blur', models.CharField(max_length=512)),
+                ('is_open', models.BooleanField(default=False, help_text='If false, users must be invited or request to join this group')),
+                ('owner', models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=django.db.models.deletion.CASCADE)),
+                ('permission_group', models.ForeignKey(to='auth.Group', unique=True, on_delete=django.db.models.deletion.CASCADE)),
             ],
             options={
             },
@@ -79,10 +80,10 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('date_joined', models.DateTimeField(auto_now_add=True)),
-                ('is_manager', models.BooleanField(default=False, help_text=b'If true, this user may perform admin actions on this group')),
+                ('is_manager', models.BooleanField(default=False, help_text='If true, this user may perform admin actions on this group')),
                 ('show_real_name', models.BooleanField(default=False)),
-                ('map_group', models.ForeignKey(to='mapgroups.MapGroup')),
-                ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
+                ('map_group', models.ForeignKey(to='mapgroups.MapGroup', on_delete=django.db.models.deletion.CASCADE)),
+                ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=django.db.models.deletion.CASCADE)),
             ],
             options={
             },
@@ -95,37 +96,37 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='invitation',
             name='group',
-            field=models.ForeignKey(to='mapgroups.MapGroup'),
+            field=models.ForeignKey(to='mapgroups.MapGroup', on_delete=django.db.models.deletion.CASCADE),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='invitation',
             name='user',
-            field=models.ForeignKey(to=settings.AUTH_USER_MODEL),
+            field=models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=django.db.models.deletion.CASCADE),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='featuredgroups',
             name='map_group',
-            field=models.ForeignKey(to='mapgroups.MapGroup', unique=True),
+            field=models.ForeignKey(to='mapgroups.MapGroup', unique=True, on_delete=django.db.models.deletion.CASCADE),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='emailinvitation',
             name='invited_by',
-            field=models.ForeignKey(to='mapgroups.MapGroupMember'),
+            field=models.ForeignKey(to='mapgroups.MapGroupMember', on_delete=django.db.models.deletion.CASCADE),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='emailinvitation',
             name='map_group',
-            field=models.ForeignKey(to='mapgroups.MapGroup'),
+            field=models.ForeignKey(to='mapgroups.MapGroup', on_delete=django.db.models.deletion.CASCADE),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='activitylog',
             name='group',
-            field=models.ForeignKey(to='mapgroups.MapGroup'),
+            field=models.ForeignKey(to='mapgroups.MapGroup', on_delete=django.db.models.deletion.CASCADE),
             preserve_default=True,
         ),
     ]
