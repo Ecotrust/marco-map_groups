@@ -27,7 +27,7 @@ Usage:
 
 try:
     from django.urls import re_path, include
-except ModuleNotFoundError:
+except (ModuleNotFoundError, ImportError):
     from django.conf.urls import url as re_path, include
 from mapgroups import rpc
 from mapgroups.views import MapGroupDetailView, \

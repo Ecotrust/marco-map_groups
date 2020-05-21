@@ -1,7 +1,7 @@
 from django.contrib.auth.decorators import login_required
 try:
     from django.urls import reverse, reverse_lazy
-except ModuleNotFoundError:
+except (ModuleNotFoundError, ImportError):
     from django.core.urlresolvers import reverse, reverse_lazy
 from django.http.response import HttpResponse, HttpResponseRedirect, \
     HttpResponseNotFound
