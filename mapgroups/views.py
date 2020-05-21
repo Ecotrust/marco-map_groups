@@ -1,5 +1,8 @@
 from django.contrib.auth.decorators import login_required
-from django.urls import reverse, reverse_lazy
+try:
+    from django.urls import reverse, reverse_lazy
+except ModuleNotFoundError:
+    from django.core.urlresolvers import reverse, reverse_lazy
 from django.http.response import HttpResponse, HttpResponseRedirect, \
     HttpResponseNotFound
 from django.shortcuts import get_object_or_404
@@ -275,4 +278,3 @@ class MapGroupPreferencesView(FormView):
         self.member.save()
 
         return super(MapGroupPreferencesView, self).form_valid(form)
-

@@ -25,8 +25,10 @@ Usage:
     urls(r'^mount_point/', include(map_groups.urls.urls('Project Name Space'))
 """
 
-# from django.conf.urls import url, include
-from django.urls import re_path, include
+try:
+    from django.urls import re_path, include
+except ModuleNotFoundError:
+    from django.conf.urls import url as re_path, include
 from mapgroups import rpc
 from mapgroups.views import MapGroupDetailView, \
     MapGroupCreate, MapGroupListView, JoinMapGroupActionView, \
