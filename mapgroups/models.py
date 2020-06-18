@@ -118,7 +118,12 @@ class MapGroup(models.Model):
 
     def save(self, *args, **kwargs):
         self._process_uploaded_image()
-        self.slug = slugify(unicode(self.name))
+        try:
+            # Python 2
+            self.slug = slugify(unicode(self.name))
+        except NameError as e:
+            # Python 3
+            self.slug = slugify(str(self.name))
         super(MapGroup, self).save(*args, **kwargs)
 
         # Reset the stored image name
@@ -230,12 +235,12 @@ class MapGroup(models.Model):
     def has_member(self, user):
         """@type user User
         """
-        if user.is_anonymous() or not user.is_active:
+        if user.is_anonymous or not user.is_active:
             return False
         return self.mapgroupmember_set.filter(user=user).exists()
 
     def get_member(self, user):
-        if user.is_anonymous() or not user.is_active:
+        if user.is_anonymous or not user.is_active:
             return None
         try:
             return self.mapgroupmember_set.get(user=user)
@@ -253,7 +258,12 @@ class MapGroup(models.Model):
         # last 8 chars with randomness.
         # This is done because slugs aren't guaranteed to be unique, but we
         # want permission groups to be unique to the map group.
-        name = slugify(unicode(self.name))
+        try:
+            # Python 2
+            name = slugify(unicode(self.name))
+        except NameError as e:
+            # Python 3
+            name = slugify(str(self.name))
         name = name[:min(80 - 8, len(name))] + get_random_string(8)
         return name
 
