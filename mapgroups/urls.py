@@ -36,6 +36,8 @@ from mapgroups.views import MapGroupDetailView, \
     LeaveMapGroupActionView, DeleteMapGroupActionView, \
     RemoveMapGroupImageActionView
 
+app_name = 'mapgroups'
+
 urlpatterns = [
     # Map group urls look something like:
     #   midatlanticoceans.org/g/49/swiftly-sinking-sailfish
