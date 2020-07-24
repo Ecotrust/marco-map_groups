@@ -70,7 +70,7 @@ class MapGroupTest(TestCase):
     def test_map_group_has_anonymous_member(self):
         c = Client()
         anon = auth.get_user(c)
-        self.assertTrue(anon.is_anonymous())
+        self.assertTrue(anon.is_anonymous)
         self.assertFalse(self.mg.has_member(anon))
 
     def test_permission_group_name(self):
@@ -529,7 +529,7 @@ class MapGroupRPCTest(TestCase):
             c.get(reverse('mapgroups:rpc:get_sharing_groups'))
         except AttributeError:
             self.fail("Get sharing groups anonymously failed (MP-820)")
-    
+
     def test_get_sharing_groups_logged_in(self):
         c = Client()
         self.assertTrue(c.login(username=self.users['usr1'].username,
@@ -553,5 +553,3 @@ class MapGroupRPCTest(TestCase):
 
         # If new keys are added then modify the test
         self.assertEqual(len(data.keys()), 3)
-
-
