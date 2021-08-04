@@ -47,7 +47,9 @@ class CreateGroupForm(forms.Form, DivForm):
                            widget=forms.TextInput(attrs={'class': 'form-control'}))
     blurb = forms.CharField(max_length=512,
                             widget=forms.Textarea(attrs={'class': 'form-control'}))
-    is_open = forms.BooleanField(required=False, widget=BSCheckboxInput())
+    # is_open = forms.BooleanField(required=False, widget=BSCheckboxInput())
+    # is_open = forms.BooleanField(required=False, widget=forms.CheckboxInput())
+    is_open = forms.BooleanField(required=False)
     image = forms.ImageField(required=False,
                              widget=forms.FileInput(attrs={'class': 'form-control'}))
 

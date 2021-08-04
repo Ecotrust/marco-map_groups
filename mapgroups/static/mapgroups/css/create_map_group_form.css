@@ -1,0 +1,24 @@
+div.toggle.btn {
+  top: -1.5rem;
+}
+
+.toggle, .toggle-on, .toggle-off, .toggle-handle {
+  border-radius: 20px;
+}
+
+.toggle-on {
+  color: #fff;
+  background-color: #449d44;
+  border-color: #398439;
+}
+
+.toggle-off, .toggle-off.btn.active {
+  color: #fff;
+  background-color: #c9302c;
+  border-color: #ac2925;
+}
+
+.toggle-off:hover, .toggle-off.btn.active:hover {
+  color: #000;
+  background-color: #f3f3f4;
+}

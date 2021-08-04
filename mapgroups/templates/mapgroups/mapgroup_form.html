@@ -1,4 +1,11 @@
 {% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+  {{ block.super }}
+  <link href="{% static '/mapgroups/assets/bootstrap-toggle-master/css/bootstrap-toggle.min.css' %}" rel="stylesheet">
+  <link href="{% static '/mapgroups/css/create_map_group_form.css' %}" rel="stylesheet">
+{% endblock %}
 
 {% block page_header %}
     <a class="btn btn-success" href="{% url 'mapgroups:list'%}">&larr; Groups</a>
@@ -45,27 +52,31 @@
                 </div>
                 <div class="row">
                     <div class="form-group">
+                        <div class="col-md-3"><label>Group Type</label></div>
+                        <div class="col-md-9">
+                            <!-- <div class="btn btn-default"> -->
+                                <label>
+                                    <input id="id_is_open" name="is_open"
+                                        type="checkbox" checked="checked"
+                                        data-toggle="toggle" data-on="Public"
+                                        data-off="Private"
+                                        data-onstyle="success"
+                                        data-offstyle="danger">
+                                </label>
+                            <!-- </div> -->
+                            <p>Tip: Anyone can join a public group. Group owners
+                            approve private group membership requests.</p>
+                        </div>
+                        <label for="{{ form.is_open.id_for_label }}" class="col-md-9"></label>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group">
                         <label for="{{ form.blurb.id_for_label }}" class="col-md-3" class="form-control">Description</label>
                         <div class="col-md-9">
                             {{ form.blurb }}
                             {{ form.blurb.errors }}
                         </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="form-group">
-                        <div class="col-md-3"><label>Open, or Private?</label></div>
-                        <div class="col-md-9">
-                            <div class="btn btn-default">
-                                <label>
-                                    <input id="id_is_open" name="is_open" type="checkbox" checked="checked">
-                                    Open Group
-                                </label>
-                            </div>
-                            <p>Tip: Anyone can join an open group. Group owners
-                            approve private group membership requests.</p>
-                        </div>
-                        <label for="{{ form.is_open.id_for_label }}" class="col-md-9"></label>
                     </div>
                 </div>
                 <div class="row">
@@ -95,4 +106,8 @@
     </div>
 </div>
 
+{% endblock %}
+{% block extra_js %}
+  {{ block.super }}
+  <script src="{% static '/mapgroups/assets/bootstrap-toggle-master/js/bootstrap-toggle.min.js' %}"></script>
 {% endblock %}
