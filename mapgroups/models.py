@@ -14,6 +14,8 @@ from django.utils.text import slugify
 from features.registry import enable_sharing
 from django.conf import settings
 
+ACCEPTED_MEMBERSHIP_STATUS = 'Accepted'
+
 class MapGroupManager(models.Manager):
     def create(self, name, owner, open=False, blurb='', image=''):
         """Creates a new map group with the specified options, owned by the
@@ -237,7 +239,7 @@ class MapGroup(models.Model):
         """
         if user.is_anonymous or not user.is_active:
             return False
-        return self.mapgroupmember_set.filter(user=user).exists()
+        return self.mapgroupmember_set.filter(user=user, status=ACCEPTED_MEMBERSHIP_STATUS).exists()
 
     def get_member(self, user):
         if user.is_anonymous or not user.is_active:
@@ -280,6 +282,18 @@ class MapGroupMember(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     map_group = models.ForeignKey(MapGroup, on_delete=models.CASCADE)
+
+    PENDING = 'Pending'
+    ACCEPTED = ACCEPTED_MEMBERSHIP_STATUS
+    REJECTED = 'Rejected'
+    BANNED = 'Banned'
+    STATUS_CHOICES = [
+        (PENDING,'Pending'),
+        (ACCEPTED,'Accepted'),
+        (REJECTED,'Rejected'),
+        (BANNED,'Banned'),
+    ]
+    status = models.CharField(max_length=256, choices=STATUS_CHOICES, default=ACCEPTED)
 
     date_joined = models.DateTimeField(auto_now_add=True)
 
