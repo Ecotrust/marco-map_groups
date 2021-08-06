@@ -80,6 +80,11 @@ class JoinMapGroupActionForm(forms.Form, DivForm):
 class LeaveMapGroupActionForm(forms.Form, DivForm):
     pass
 
+class ApproveMapGroupActionForm(forms.Form, DivForm):
+    pass
+
+class DenyMapGroupActionForm(forms.Form, DivForm):
+    pass
 
 class DeleteMapGroupActionForm(forms.Form, DivForm):
     pass

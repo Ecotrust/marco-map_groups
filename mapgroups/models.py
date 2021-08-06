@@ -241,6 +241,13 @@ class MapGroup(models.Model):
             return False
         return self.mapgroupmember_set.filter(user=user, status=ACCEPTED_MEMBERSHIP_STATUS).exists()
 
+    def has_manager(self, user):
+        """@type user User
+        """
+        if user.is_anonymous or not user.is_active:
+            return False
+        return self.mapgroupmember_set.filter(user=user, status=ACCEPTED_MEMBERSHIP_STATUS, is_manager=True).exists()
+
     def get_member(self, user):
         if user.is_anonymous or not user.is_active:
             return None

@@ -91,6 +91,14 @@ def leave_non_owned_map_group(user, group):
 
     return True
 
+def update_map_group_membership_status(user, membership, status):
+    if membership.map_group.has_manager(user):
+        membership.status=status
+        membership.save()
+        return True
+    else:
+        return False
+
 def request_map_group_invitation(user, group, message=''):
     """Send a request to join a closed group.
     """

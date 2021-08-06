@@ -1,5 +1,12 @@
 {% extends "base.html" %}
 
+{% load static %}
+
+{% block extra_css %}
+  {{ block.super }}
+  <link href="{% static '/mapgroups/css/map_group_details.css' %}" rel="stylesheet">
+{% endblock %}
+
 {% block page_header %}
     <a class="btn btn-success" href="{% url 'mapgroups:list' %}">&larr; Groups</a>
 {% endblock %}
@@ -158,6 +165,34 @@
     </div>
 
     <div class="col-md-3">
+        {% if not mapgroup_is_open and user_is_manager and member_requests|length > 0 %}
+          <h3>Manage Group</h3>
+          <h4>Join Requests</h4>
+          <table class="group-membership-list">
+            {% for request in member_requests %}
+              <tr>
+                  <td>
+                      <img src="{{ request.user.userdata.profile_image }}" width="32" height="32" />
+                  </td>
+                  <td>
+                      <b>{{ request.user.get_short_name }}</b>
+                  </td>
+                  <td>
+                    <form method="POST" style="display: inline" action="{% url 'mapgroups:request-approve' request.pk %}">
+                        {% csrf_token %}
+                        <button class="btn btn-success" type="submit">Approve</button>
+                    </form>
+                  </td>
+                  <td>
+                    <form method="POST" style="display: inline" action="{% url 'mapgroups:request-deny' request.pk %}">
+                        {% csrf_token %}
+                        <button class="btn btn-danger" type="submit">Deny</button>
+                    </form>
+                  </td>
+              </tr>
+            {% endfor %}
+          </table>
+        {% endif %}
         {% if mapgroup.is_open or user_is_member %}
           <h3>Group Members</h3>
           <ol>

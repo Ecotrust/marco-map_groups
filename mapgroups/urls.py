@@ -34,7 +34,8 @@ from mapgroups.views import MapGroupDetailView, \
     MapGroupCreate, MapGroupListView, JoinMapGroupActionView, \
     RequestJoinMapGroupActionView, MapGroupEditView, MapGroupPreferencesView, \
     LeaveMapGroupActionView, DeleteMapGroupActionView, \
-    RemoveMapGroupImageActionView
+    RemoveMapGroupImageActionView, ApproveMapGroupActionView, \
+    DenyMapGroupActionView
 
 app_name = 'mapgroups'
 
@@ -63,6 +64,10 @@ urlpatterns = [
         DeleteMapGroupActionView.as_view(), name='delete'),
     re_path(r'^(?P<pk>\d+)/(?P<slug>[\w-]+)/join$',
         RequestJoinMapGroupActionView.as_view(), name='request-join'),
+    re_path(r'^(?P<pk>\d+)/approve$',
+        ApproveMapGroupActionView.as_view(), name='request-approve'),
+    re_path(r'^(?P<pk>\d+)/deny$',
+        DenyMapGroupActionView.as_view(), name='request-deny'),
 ]
 
 def urls(namespace='mapgroups'):
