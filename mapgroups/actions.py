@@ -8,17 +8,27 @@ def join_map_group(user, group):
     @returns MapGroupMember if successful, None if not
     @type group MapGroup
     """
-    if group.has_member(user):
-        return user.mapgroupmember_set.get(map_group=group)
+    if group.get_member(user):
+        membership = user.mapgroupmember_set.get(map_group=group)
+        if membership.status in ['Pending','Accepted','Banned']:
+            return membership
 
     if not group.is_open:
         # Must request an invite
-        return None
+        # return None
+        status='Pending'
+    else:
+        status='Accepted'
 
     # TODO: get user preference for show_real_name
-    member = MapGroupMember.objects.create(user=user, map_group=group,
-                                           is_manager=False,
-                                           show_real_name=False)
+    member, created = MapGroupMember.objects.get_or_create(user=user, map_group=group)
+
+    if created:
+        member.is_manager=False
+        member.show_real_name=False
+
+    member.status=status
+
     member.save()
 
     pg = group.permission_group
@@ -101,4 +111,3 @@ def request_map_group_invitation(user, group, message=''):
         log.save()
 
     return invite, new
-

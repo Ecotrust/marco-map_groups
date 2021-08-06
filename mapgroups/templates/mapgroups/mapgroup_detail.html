@@ -56,11 +56,17 @@
                         <button class="btn btn-success" type="submit">Join Group</button>
                     </form>
                 {% else %}
-                    <form method="POST" style="display: inline" action="{% url 'mapgroups:request-join' mapgroup.pk mapgroup.slug %}">
-                        {% csrf_token %}
-                        <p>Request to join this group.</p>
-                        <button class="btn btn-success" type="submit">Join Group</button>
-                    </form>
+                    {% if membership and membership.status == 'Pending' %}
+                      <div class='well'>Your membership request is submitted and up for review.</div>
+                    {% elif membership and membership.status == 'Banned' %}
+                      <div class='well'>You may not join this group.</div>
+                    {% else %}
+                      <form method="POST" style="display: inline" action="{% url 'mapgroups:request-join' mapgroup.pk mapgroup.slug %}">
+                          {% csrf_token %}
+                          <p>Request to join this group.</p>
+                          <button class="btn btn-success" type="submit">Join Group</button>
+                      </form>
+                    {% endif %}
                 {% endif %}
             {% endif %}
 
