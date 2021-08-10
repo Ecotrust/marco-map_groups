@@ -47,10 +47,7 @@
 
             {% if user_is_member %}
                 {% if request.user != mapgroup.owner %}
-                    <form method="POST" style="display: inline" action="{% url 'mapgroups:leave' mapgroup.pk mapgroup.slug %}">
-                        {% csrf_token %}
-                        <button class="btn btn-success" type="submit">Leave group</button>
-                    </form>
+                  <button type="button" class="btn btn-success" data-toggle="modal" data-target="#rus-leave">Leave group</button>
                 {% endif %}
 
             {% else %}
@@ -178,16 +175,23 @@
                       <b>{{ member_request.user.get_short_name }}</b>
                   </td>
                   <td>
-                    <form method="POST" style="display: inline" action="{% url 'mapgroups:request-approve' member_request.pk %}">
-                        {% csrf_token %}
-                        <button class="btn btn-success" type="submit">Approve</button>
-                    </form>
+                    <button type="button" class="btn btn-success" data-toggle="modal"
+                      data-target="#rus-membership-approval"
+                      data-member_id="{{ member_request.pk }}"
+                      data-member_name="{{ member_request.user.get_short_name }}"
+                      data-act="approve"
+                      data-title="Confirm Membership Approval"
+                    >Approve</button>
+
                   </td>
                   <td>
-                    <form method="POST" style="display: inline" action="{% url 'mapgroups:request-deny' member_request.pk %}">
-                        {% csrf_token %}
-                        <button class="btn btn-danger" type="submit">Deny</button>
-                    </form>
+                    <button type="button" class="btn btn-danger" data-toggle="modal"
+                      data-target="#rus-membership-approval"
+                      data-member_id="{{ member_request.pk }}"
+                      data-member_name="{{ member_request.user.get_short_name }}"
+                      data-act="deny"
+                      data-title="Confirm Membership Rejection"
+                    >Deny</button>
                   </td>
               </tr>
             {% endfor %}
@@ -237,10 +241,7 @@
                     <td>
                       {% if member.user != mapgroup.owner %}
                         {% if member.user == request.user %}
-                          <form method="POST" style="display: inline" action="{% url 'mapgroups:leave' mapgroup.pk mapgroup.slug %}">
-                              {% csrf_token %}
-                              <button class="btn btn-success" type="submit">Leave group</button>
-                          </form>
+                          <button type="button" class="btn btn-success" data-toggle="modal" data-target="#rus-leave">Leave group</button>
                         {% else %}
                           <form method="POST" style="display: inline" action="{% url 'mapgroups:remove-member' member.pk %}">
                               {% csrf_token %}
@@ -258,4 +259,63 @@
     </div>
 </div>
 
+<div class="modal fade" id="rus-leave" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                Confirm Leave Group
+            </div>
+            <div class="modal-body">
+                Are you sure you want to leave this group?
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                <form method="POST" style="display: inline" action="{% url 'mapgroups:leave' mapgroup.pk mapgroup.slug %}">
+                    {% csrf_token %}
+                    <button class="btn btn-success" type="submit">Leave group</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="rus-membership-approval" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header" id="approve-title">
+                Confirm Membership Approval
+            </div>
+            <div class="modal-body">
+                Are you sure you want to <span id='approval-act'>approve</span>
+                the membership request from <span id="approve-username"></span>?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                <form method="POST" id="approve-member-button-form" style="display: inline" action="">
+                    {% csrf_token %}
+                    <button class="btn btn-success" type="submit">I'm sure</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+  {{ block.super }}
+  <script>
+    $('#rus-membership-approval').on('show.bs.modal', function (event) {
+      var button = $(event.relatedTarget); // Button that triggered the modal
+      var member_pk = button.data('member_id');
+      var member_name = button.data('member_name');
+      var title = button.data('title');
+      var action = button.data('act');
+      $('#approve-member-button-form').attr('action', '/collaborate/groups/' + member_pk + '/' + action);
+      $('#approve-username').html(member_name);
+      $('#approve-title').html(title);
+      $('#approval-act').html(action);
+    });
+  </script>
 {% endblock %}
