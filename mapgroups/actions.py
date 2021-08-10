@@ -160,6 +160,31 @@ def update_map_group_membership_manager(user, membership, is_manager):
     if membership.map_group.has_manager(user):
         membership.is_manager=is_manager
         membership.save()
+
+        member = membership.user
+
+        context = {
+            'user_preferred_name': member.get_short_name(),
+            'user_full_name': member.get_full_name(),
+            'group_name': membership.map_group.name,
+            'is_manager': is_manager,
+            'group_url': '{}{}'.format(settings.APP_URL, membership.map_group.get_absolute_url()),
+            'app_name': settings.APP_NAME,
+            'team_name': settings.APP_TEAM_NAME,
+            'team_email': settings.DEFAULT_FROM_EMAIL,
+            'app_url': settings.APP_URL,
+        }
+
+        template = get_template('mapgroups/email/manager_status_update.txt')
+        body_txt = template.render(context)
+
+        # TODO: Make HTML template.
+        body_html = body_txt
+        #     template = get_template('accounts/mail/verify_email.html')
+        #     body_html = template.render(context)
+
+        member.email_user('{}: Manager Status Updated'.format(membership.map_group.name), body_txt, fail_silently=False)
+
         return True
     else:
         return False
