@@ -8,5 +8,5 @@ Please log in and approve or decline this membership status at {{ group_url }}.
 Best regards,
 
   {{ team_name }}
-  {{ team_email }}
+  {{ team_email|safe }}
   {{ app_url }}
