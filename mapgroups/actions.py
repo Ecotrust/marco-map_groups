@@ -1,6 +1,9 @@
 from django.contrib.auth.models import Group
 import itertools
 from mapgroups.models import MapGroup, MapGroupMember, Invitation, ActivityLog
+from django.core.mail import send_mail
+from django.template.loader import get_template
+from django.conf import settings
 
 
 def join_map_group(user, group):
@@ -13,12 +16,12 @@ def join_map_group(user, group):
         if membership.status in ['Pending','Accepted','Banned']:
             return membership
 
-    if not group.is_open:
+    if group.is_open:
+        status='Accepted'
+    else:
         # Must request an invite
         # return None
         status='Pending'
-    else:
-        status='Accepted'
 
     # TODO: get user preference for show_real_name
     member, created = MapGroupMember.objects.get_or_create(user=user, map_group=group)
@@ -34,6 +37,9 @@ def join_map_group(user, group):
     pg = group.permission_group
     user.groups.add(pg)
 
+    if not group.is_open and status=='Pending':
+        email_request_to_managers(member)
+
     log = ActivityLog()
     log.associated_user = user
     log.admin = True
@@ -43,6 +49,33 @@ def join_map_group(user, group):
 
     return member
 
+def email_request_to_managers(membership):
+    user = membership.user
+    group = membership.map_group
+    managers = [x.user for x in group.mapgroupmember_set.filter(is_manager=True)]
+
+    for manager in managers:
+        context = {
+            'manager_name': manager.get_short_name(),
+            'user_preferred_name': user.get_short_name(),
+            'user_full_name': user.get_full_name(),
+            'group_name': group.name,
+            'group_url': '{}{}'.format(settings.APP_URL, group.get_absolute_url()),
+            'app_name': settings.APP_NAME,
+            'team_name': settings.APP_TEAM_NAME,
+            'team_email': settings.DEFAULT_FROM_EMAIL,
+            'app_url': settings.APP_URL,
+        }
+
+        template = get_template('mapgroups/email/request_alert.txt')
+        body_txt = template.render(context)
+
+        # TODO: Make HTML template.
+        body_html = body_txt
+        #     template = get_template('accounts/mail/verify_email.html')
+        #     body_html = template.render(context)
+
+        manager.email_user('{}: New User Request'.format(group.name), body_txt, fail_silently=False)
 
 def delete_owned_map_group(user, group):
     # can't delete a group unless you own it
