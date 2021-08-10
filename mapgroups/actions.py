@@ -135,7 +135,7 @@ def update_map_group_membership_status(user, membership, status):
             'user_full_name': member.get_full_name(),
             'group_name': membership.map_group.name,
             'status': status,
-            'group_url': '{}{}'.format(settings.APP_URL, group.get_absolute_url()),
+            'group_url': '{}{}'.format(settings.APP_URL, membership.map_group.get_absolute_url()),
             'app_name': settings.APP_NAME,
             'team_name': settings.APP_TEAM_NAME,
             'team_email': settings.DEFAULT_FROM_EMAIL,
