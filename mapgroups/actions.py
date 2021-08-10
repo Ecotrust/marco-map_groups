@@ -150,7 +150,7 @@ def update_map_group_membership_status(user, membership, status):
         #     template = get_template('accounts/mail/verify_email.html')
         #     body_html = template.render(context)
 
-        membership.email_user('{}: Membership Status {}'.format(membership.map_group.name, status), body_txt, fail_silently=False)
+        member.email_user('{}: Membership Status {}'.format(membership.map_group.name, status), body_txt, fail_silently=False)
 
         return True
     else:
