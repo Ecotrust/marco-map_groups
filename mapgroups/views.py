@@ -267,6 +267,8 @@ class RemoveMapGroupMemberActionView(FormView):
         return super(RemoveMapGroupMemberActionView, self).post(request, *args, **kwargs)
 
     def form_valid(self, form):
+        if self.membership.is_manager:
+            update_map_group_membership_manager(self.request.user, self.membership, False)
         success = update_map_group_membership_status(self.request.user, self.membership, 'Rejected')
         if not success:
             # User is not permitted to manage this group membership request

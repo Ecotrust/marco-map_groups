@@ -169,22 +169,22 @@
           <h3>Manage Group</h3>
           <h4>Join Requests</h4>
           <table class="group-membership-list">
-            {% for request in member_requests %}
+            {% for member_request in member_requests %}
               <tr>
                   <td>
-                      <img src="{{ request.user.userdata.profile_image }}" width="32" height="32" />
+                      <img src="{{ member_request.user.userdata.profile_image }}" width="32" height="32" />
                   </td>
                   <td>
-                      <b>{{ request.user.get_short_name }}</b>
+                      <b>{{ member_request.user.get_short_name }}</b>
                   </td>
                   <td>
-                    <form method="POST" style="display: inline" action="{% url 'mapgroups:request-approve' request.pk %}">
+                    <form method="POST" style="display: inline" action="{% url 'mapgroups:request-approve' member_request.pk %}">
                         {% csrf_token %}
                         <button class="btn btn-success" type="submit">Approve</button>
                     </form>
                   </td>
                   <td>
-                    <form method="POST" style="display: inline" action="{% url 'mapgroups:request-deny' request.pk %}">
+                    <form method="POST" style="display: inline" action="{% url 'mapgroups:request-deny' member_request.pk %}">
                         {% csrf_token %}
                         <button class="btn btn-danger" type="submit">Deny</button>
                     </form>
@@ -235,10 +235,20 @@
                       {% endif %}
                     </td>
                     <td>
-                      <form method="POST" style="display: inline" action="{% url 'mapgroups:remove-member' member.pk %}">
-                          {% csrf_token %}
-                          <button class="btn btn-danger" type="submit">Remove</button>
-                      </form>
+                      {% if member.user != mapgroup.owner %}
+                        {% if member.user == request.user %}
+                          <form method="POST" style="display: inline" action="{% url 'mapgroups:leave' mapgroup.pk mapgroup.slug %}">
+                              {% csrf_token %}
+                              <button class="btn btn-success" type="submit">Leave group</button>
+                          </form>
+                        {% else %}
+                          <form method="POST" style="display: inline" action="{% url 'mapgroups:remove-member' member.pk %}">
+                              {% csrf_token %}
+                              <button class="btn btn-danger" type="submit">Remove</button>
+                          </form>
+                        {% endif %}
+                      {% endif %}
+
                     </td>
                   {% endif %}
               </tr>
