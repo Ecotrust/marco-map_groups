@@ -90,7 +90,6 @@ def delete_owned_map_group(user, group):
 
     return True
 
-
 def leave_non_owned_map_group(user, group):
     # can't leave a group if you own it
     if group.owner == user:
@@ -128,6 +127,31 @@ def update_map_group_membership_status(user, membership, status):
     if membership.map_group.has_manager(user):
         membership.status=status
         membership.save()
+
+        member = membership.user
+
+        context = {
+            'user_preferred_name': member.get_short_name(),
+            'user_full_name': member.get_full_name(),
+            'group_name': group.name,
+            'status': status,
+            'group_url': '{}{}'.format(settings.APP_URL, group.get_absolute_url()),
+            'app_name': settings.APP_NAME,
+            'team_name': settings.APP_TEAM_NAME,
+            'team_email': settings.DEFAULT_FROM_EMAIL,
+            'app_url': settings.APP_URL,
+        }
+
+        template = get_template('mapgroups/email/status_update.txt')
+        body_txt = template.render(context)
+
+        # TODO: Make HTML template.
+        body_html = body_txt
+        #     template = get_template('accounts/mail/verify_email.html')
+        #     body_html = template.render(context)
+
+        membership.email_user('{}: Membership Status {}'.format(group.name, status), body_txt, fail_silently=False)
+
         return True
     else:
         return False
