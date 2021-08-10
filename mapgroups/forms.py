@@ -76,7 +76,6 @@ class RemoveMapGroupImageForm(forms.Form):
 class JoinMapGroupActionForm(forms.Form, DivForm):
     pass
 
-
 class LeaveMapGroupActionForm(forms.Form, DivForm):
     pass
 
@@ -89,10 +88,14 @@ class DenyMapGroupActionForm(forms.Form, DivForm):
 class DeleteMapGroupActionForm(forms.Form, DivForm):
     pass
 
+class PromoteMapGroupMemberActionForm(forms.Form, DivForm):
+    pass
+
+class RemoveMapGroupMemberActionForm(forms.Form, DivForm):
+    pass
 
 class MapGroupPreferencesForm(forms.Form, DivForm):
     show_real_name = forms.BooleanField(required=False)
-
 
 class RequestJoinMapGroupActionForm(forms.Form, DivForm):
     message = forms.CharField()

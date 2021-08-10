@@ -195,28 +195,46 @@
         {% endif %}
         {% if mapgroup.is_open or user_is_member %}
           <h3>Group Members</h3>
-          <ol>
+          <table class="group-membership-list">
               {% for member in sorted_member_list %}
-              <li>
-                  <img src="{{ member.user.userdata.profile_image }}" width="32" height="32" />
+              <tr>
+                  <td><img src="{{ member.user.userdata.profile_image }}" width="32" height="32" /></td>
 
-                  {% if membership %}
-                      <b>{{ member.user_name_for_group }}</b> <!-- Show real name -->
-                  {% else %}
-                      <b>{{ member.user.get_short_name }}</b> <!-- Show pref name -->
-                  {% endif %}
+                  <td>
+                    {% if membership %}
+                        <b>{{ member.user_name_for_group }}</b> <!-- Show real name -->
+                    {% else %}
+                        <b>{{ member.user.get_short_name }}</b> <!-- Show pref name -->
+                    {% endif %}
 
-                  {# call out the current user and owner of the group #}
-                  {% if request.user == member.user %}
-                      (you{% if request.user == mapgroup.owner %}, owner{% endif %})
-                  {% else %}
-                      {% if member.user == mapgroup.owner %}
-                          (owner)
+                    {# call out the current user and owner of the group #}
+                    {% if request.user == member.user %}
+                        (you{% if request.user == mapgroup.owner %}, owner{% endif %})
+                    {% else %}
+                        {% if member.user == mapgroup.owner %}
+                            (owner)
+                        {% endif %}
+                    {% endif %}
+                  </td>
+                  {% if not mapgroup_is_open and user_is_manager %}
+                    <td>
+                      {% if not member.is_manager %}
+                        <form method="POST" style="display: inline" action="{% url 'mapgroups:promote-member' member.pk %}">
+                            {% csrf_token %}
+                            <button class="btn btn-success" type="submit">Promote</button>
+                        </form>
                       {% endif %}
+                    </td>
+                    <td>
+                      <form method="POST" style="display: inline" action="{% url 'mapgroups:remove-member' member.pk %}">
+                          {% csrf_token %}
+                          <button class="btn btn-danger" type="submit">Remove</button>
+                      </form>
+                    </td>
                   {% endif %}
-              </li>
+              </tr>
               {% endfor %}
-          </ol>
+          </table>
         {% endif %}
     </div>
 </div>

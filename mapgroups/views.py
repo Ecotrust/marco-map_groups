@@ -13,11 +13,13 @@ from django.views.generic.edit import CreateView, ModelFormMixin
 from django.views.generic.list import ListView
 
 from mapgroups.actions import join_map_group, leave_non_owned_map_group, \
-    delete_owned_map_group, update_map_group_membership_status
+    delete_owned_map_group, update_map_group_membership_status, \
+    update_map_group_membership_manager
 from mapgroups.forms import CreateGroupForm, JoinMapGroupActionForm, \
     RequestJoinMapGroupActionForm, EditMapGroupForm, MapGroupPreferencesForm, \
     LeaveMapGroupActionForm, DeleteMapGroupActionForm, RemoveMapGroupImageForm, \
-    ApproveMapGroupActionForm, DenyMapGroupActionForm
+    ApproveMapGroupActionForm, DenyMapGroupActionForm, \
+    PromoteMapGroupMemberActionForm, RemoveMapGroupMemberActionForm
 from mapgroups.models import MapGroup, FeaturedGroups, MapGroupMember
 from nursery.view_helpers import decorate_view
 
@@ -204,6 +206,51 @@ class DenyMapGroupActionView(FormView):
             pass
 
         return super(DenyMapGroupActionView, self).form_valid(form)
+
+
+@decorate_view(login_required)
+class PromoteMapGroupMemberActionView(FormView):
+    template_name = None
+    form_class = PromoteMapGroupMemberActionForm
+
+    def post(self, request, *args, **kwargs):
+        self.membership = MapGroupMember.objects.get(pk=kwargs['pk'])
+        detail_kwargs = {
+            'pk': self.membership.map_group.pk,
+            'slug': self.membership.map_group.slug
+        }
+        self.success_url = reverse('mapgroups:detail', kwargs=detail_kwargs)
+        return super(PromoteMapGroupMemberActionView, self).post(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        success = update_map_group_membership_manager(self.request.user, self.membership, True)
+        if not success:
+            # User is not permitted to manage this group membership request
+            pass
+
+        return super(PromoteMapGroupMemberActionView, self).form_valid(form)
+
+@decorate_view(login_required)
+class RemoveMapGroupMemberActionView(FormView):
+    template_name = None
+    form_class = RemoveMapGroupMemberActionForm
+
+    def post(self, request, *args, **kwargs):
+        self.membership = MapGroupMember.objects.get(pk=kwargs['pk'])
+        detail_kwargs = {
+            'pk': self.membership.map_group.pk,
+            'slug': self.membership.map_group.slug
+        }
+        self.success_url = reverse('mapgroups:detail', kwargs=detail_kwargs)
+        return super(RemoveMapGroupMemberActionView, self).post(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        success = update_map_group_membership_status(self.request.user, self.membership, 'Rejected')
+        if not success:
+            # User is not permitted to manage this group membership request
+            pass
+
+        return super(RemoveMapGroupMemberActionView, self).form_valid(form)
 
 @decorate_view(login_required)
 class DeleteMapGroupActionView(FormView):

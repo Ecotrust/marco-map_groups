@@ -132,6 +132,14 @@ def update_map_group_membership_status(user, membership, status):
     else:
         return False
 
+def update_map_group_membership_manager(user, membership, is_manager):
+    if membership.map_group.has_manager(user):
+        membership.is_manager=is_manager
+        membership.save()
+        return True
+    else:
+        return False
+
 def request_map_group_invitation(user, group, message=''):
     """Send a request to join a closed group.
     """
