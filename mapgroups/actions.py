@@ -133,7 +133,7 @@ def update_map_group_membership_status(user, membership, status):
         context = {
             'user_preferred_name': member.get_short_name(),
             'user_full_name': member.get_full_name(),
-            'group_name': group.name,
+            'group_name': membership.map_group.name,
             'status': status,
             'group_url': '{}{}'.format(settings.APP_URL, group.get_absolute_url()),
             'app_name': settings.APP_NAME,
@@ -150,7 +150,7 @@ def update_map_group_membership_status(user, membership, status):
         #     template = get_template('accounts/mail/verify_email.html')
         #     body_html = template.render(context)
 
-        membership.email_user('{}: Membership Status {}'.format(group.name, status), body_txt, fail_silently=False)
+        membership.email_user('{}: Membership Status {}'.format(membership.map_group.name, status), body_txt, fail_silently=False)
 
         return True
     else:
