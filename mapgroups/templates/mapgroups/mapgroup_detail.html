@@ -209,10 +209,12 @@
 
                     {# call out the current user and owner of the group #}
                     {% if request.user == member.user %}
-                        (you{% if request.user == mapgroup.owner %}, owner{% endif %})
+                        (you{% if request.user == mapgroup.owner %}, owner{% elif member.is_manager %}, manager{% endif %})
                     {% else %}
                         {% if member.user == mapgroup.owner %}
                             (owner)
+                        {% elif member.is_manager %}
+                            (manager)
                         {% endif %}
                     {% endif %}
                   </td>
@@ -223,6 +225,13 @@
                             {% csrf_token %}
                             <button class="btn btn-success" type="submit">Promote</button>
                         </form>
+                      {% else %}
+                        {% if not member.user == mapgroup.owner %}
+                          <form method="POST" style="display: inline" action="{% url 'mapgroups:demote-member' member.pk %}">
+                              {% csrf_token %}
+                              <button class="btn btn-success" type="submit">Demote</button>
+                          </form>
+                        {% endif %}
                       {% endif %}
                     </td>
                     <td>

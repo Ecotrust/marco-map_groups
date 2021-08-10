@@ -36,7 +36,7 @@ from mapgroups.views import MapGroupDetailView, \
     LeaveMapGroupActionView, DeleteMapGroupActionView, \
     RemoveMapGroupImageActionView, ApproveMapGroupActionView, \
     DenyMapGroupActionView, PromoteMapGroupMemberActionView, \
-    RemoveMapGroupMemberActionView
+    RemoveMapGroupMemberActionView, DemoteMapGroupMemberActionView
 
 app_name = 'mapgroups'
 
@@ -71,6 +71,8 @@ urlpatterns = [
         DenyMapGroupActionView.as_view(), name='request-deny'),
     re_path(r'^(?P<pk>\d+)/promote$',
         PromoteMapGroupMemberActionView.as_view(), name='promote-member'),
+    re_path(r'^(?P<pk>\d+)/demote$',
+        DemoteMapGroupMemberActionView.as_view(), name='demote-member'),
     re_path(r'^(?P<pk>\d+)/remove$',
         RemoveMapGroupMemberActionView.as_view(), name='remove-member'),
 ]

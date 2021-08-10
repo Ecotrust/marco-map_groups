@@ -231,6 +231,28 @@ class PromoteMapGroupMemberActionView(FormView):
         return super(PromoteMapGroupMemberActionView, self).form_valid(form)
 
 @decorate_view(login_required)
+class DemoteMapGroupMemberActionView(FormView):
+    template_name = None
+    form_class = PromoteMapGroupMemberActionForm
+
+    def post(self, request, *args, **kwargs):
+        self.membership = MapGroupMember.objects.get(pk=kwargs['pk'])
+        detail_kwargs = {
+            'pk': self.membership.map_group.pk,
+            'slug': self.membership.map_group.slug
+        }
+        self.success_url = reverse('mapgroups:detail', kwargs=detail_kwargs)
+        return super(DemoteMapGroupMemberActionView, self).post(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        success = update_map_group_membership_manager(self.request.user, self.membership, False)
+        if not success:
+            # User is not permitted to manage this group membership request
+            pass
+
+        return super(DemoteMapGroupMemberActionView, self).form_valid(form)
+
+@decorate_view(login_required)
 class RemoveMapGroupMemberActionView(FormView):
     template_name = None
     form_class = RemoveMapGroupMemberActionForm
