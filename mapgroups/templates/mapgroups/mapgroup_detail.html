@@ -225,16 +225,22 @@
                   {% if not mapgroup_is_open and user_is_manager %}
                     <td>
                       {% if not member.is_manager %}
-                        <form method="POST" style="display: inline" action="{% url 'mapgroups:promote-member' member.pk %}">
-                            {% csrf_token %}
-                            <button class="btn btn-success" type="submit">Promote</button>
-                        </form>
+                        <button type="button" class="btn btn-success" data-toggle="modal"
+                          data-target="#rus-membership-status"
+                          data-member_id="{{ member.pk }}"
+                          data-member_name="{{ member.user.get_short_name }}"
+                          data-act="promote"
+                          data-title="Confirm Member Promotion"
+                        >Promote</button>
                       {% else %}
                         {% if not member.user == mapgroup.owner %}
-                          <form method="POST" style="display: inline" action="{% url 'mapgroups:demote-member' member.pk %}">
-                              {% csrf_token %}
-                              <button class="btn btn-success" type="submit">Demote</button>
-                          </form>
+                          <button type="button" class="btn btn-success" data-toggle="modal"
+                            data-target="#rus-membership-status"
+                            data-member_id="{{ member.pk }}"
+                            data-member_name="{{ member.user.get_short_name }}"
+                            data-act="demote"
+                            data-title="Confirm Member Demotion"
+                          >Demote</button>
                         {% endif %}
                       {% endif %}
                     </td>
@@ -243,10 +249,13 @@
                         {% if member.user == request.user %}
                           <button type="button" class="btn btn-success" data-toggle="modal" data-target="#rus-leave">Leave group</button>
                         {% else %}
-                          <form method="POST" style="display: inline" action="{% url 'mapgroups:remove-member' member.pk %}">
-                              {% csrf_token %}
-                              <button class="btn btn-danger" type="submit">Remove</button>
-                          </form>
+                          <button type="button" class="btn btn-danger" data-toggle="modal"
+                            data-target="#rus-membership-status"
+                            data-member_id="{{ member.pk }}"
+                            data-member_name="{{ member.user.get_short_name }}"
+                            data-act="remove"
+                            data-title="Confirm Member Removal"
+                          >Remove</button>
                         {% endif %}
                       {% endif %}
 
@@ -301,21 +310,31 @@
     </div>
 </div>
 
+<div class="modal fade" id="rus-membership-status" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header" id="rus-status-title">
+                Confirm Member Removal
+            </div>
+            <div class="modal-body">
+                Are you sure you want to <span id='status-act'>remove</span>
+                member <span id="status-username"></span>?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                <form method="POST" id="status-member-button-form" style="display: inline" action="">
+                    {% csrf_token %}
+                    <button class="btn btn-success rus-submit" type="submit">I'm sure</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block extra_js %}
   {{ block.super }}
-  <script>
-    $('#rus-membership-approval').on('show.bs.modal', function (event) {
-      var button = $(event.relatedTarget); // Button that triggered the modal
-      var member_pk = button.data('member_id');
-      var member_name = button.data('member_name');
-      var title = button.data('title');
-      var action = button.data('act');
-      $('#approve-member-button-form').attr('action', '/collaborate/groups/' + member_pk + '/' + action);
-      $('#approve-username').html(member_name);
-      $('#approve-title').html(title);
-      $('#approval-act').html(action);
-    });
-  </script>
+  <script type="text/javascript" src="{% static 'mapgroups/js/mapgroup_modal_munging.js' %}"></script>
+
 {% endblock %}
