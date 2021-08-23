@@ -1,3 +1,11 @@
 table.group-membership-list td {
     padding: 0.5rem;
 }
+
+button.rus-submit {
+  text-transform: lowercase;
+}
+
+button.rus-submit::first-letter {
+  text-transform: capitalize;
+}
