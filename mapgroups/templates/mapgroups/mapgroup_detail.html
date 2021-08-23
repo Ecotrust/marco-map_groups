@@ -107,7 +107,7 @@
             <h4>Map Bookmarks</h4>
             <ul>
                 {% for object in shared_items.bookmarks %}
-                    <li>{{ object.name }}</li> {# Bookmark url is object.url_hash #}
+                    <li><a href="/visualize/#bookmark={{ object.pk }}" target="_blank">{{ object.name }}</a></li>
                 {% empty %}
                     <li>No shared maps.</li>
                 {% endfor %}
