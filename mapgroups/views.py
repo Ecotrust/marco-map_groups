@@ -113,7 +113,6 @@ class MapGroupListView(ListView):
         context['mapgroups'] = MapGroup.not_featured.all()
         return context
 
-
 @decorate_view(login_required)
 class JoinMapGroupActionView(FormView):
     """FormView to join a map group.
@@ -142,7 +141,6 @@ class JoinMapGroupActionView(FormView):
 
     def post(self, request, *args, **kwargs):
         return self.handle(request, *args, **kwargs)
-
 
 @decorate_view(login_required)
 class LeaveMapGroupActionView(FormView):
@@ -206,7 +204,6 @@ class DenyMapGroupActionView(FormView):
             pass
 
         return super(DenyMapGroupActionView, self).form_valid(form)
-
 
 @decorate_view(login_required)
 class PromoteMapGroupMemberActionView(FormView):
@@ -295,7 +292,6 @@ class DeleteMapGroupActionView(FormView):
 
         return super(DeleteMapGroupActionView, self).form_valid(form)
 
-
 @decorate_view(login_required)
 class RequestJoinMapGroupActionView(FormView):
     """Process a join request for a closed group.
@@ -316,32 +312,45 @@ class RequestJoinMapGroupActionView(FormView):
 
         return super(RequestJoinMapGroupActionView, self).form_valid(form)
 
-
 @decorate_view(login_required)
 class MapGroupEditView(FormView):
-    template_name = 'mapgroups/mapgroup_edit.html'
     form_class = EditMapGroupForm
+    template_name = 'mapgroups/mapgroup_edit.html'
+    model = MapGroup
+    success_url = '.'
 
     def get_initial(self):
         """
         Returns the initial data to use for forms on this view.
         """
         mg = get_object_or_404(MapGroup, owner=self.request.user, **self.kwargs)
-
         return {
             'name': mg.name,
             'blurb': mg.blurb,
             'is_open': mg.is_open,
+            'image': mg.image,
         }
 
     def get_context_data(self, **kwargs):
         mg = get_object_or_404(MapGroup, owner=self.request.user, **self.kwargs)
-        kwargs.update({'mapgroup': mg})
-        return kwargs
+        context = super(MapGroupEditView, self).get_context_data(**kwargs)
+        context.update({'mapgroup': mg})
+        return context
 
     def get(self, request, *args, **kwargs):
-        mg = get_object_or_404(MapGroup, owner=self.request.user, **self.kwargs)
+        # mg = get_object_or_404(MapGroup, owner=self.request.user, **self.kwargs)
         return super(MapGroupEditView, self).get(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        form_kwargs = super(MapGroupEditView, self).get_form_kwargs()
+        mg = get_object_or_404(MapGroup, owner=self.request.user, **self.kwargs)
+        if mg:
+            form_kwargs['initial']['name'] = mg.name
+            form_kwargs['initial']['blurb'] = mg.blurb
+            form_kwargs['initial']['is_open'] = mg.is_open
+            form_kwargs['initial']['image'] = mg.image
+
+        return form_kwargs
 
     def post(self, request, *args, **kwargs):
         mg = get_object_or_404(MapGroup, owner=self.request.user, **self.kwargs)
@@ -380,7 +389,6 @@ class RemoveMapGroupImageActionView(FormView):
         self.mapgroup.save()
 
         return super(RemoveMapGroupImageActionView, self).form_valid(form)
-
 
 @decorate_view(login_required)
 class MapGroupPreferencesView(FormView):

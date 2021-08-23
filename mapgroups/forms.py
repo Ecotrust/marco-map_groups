@@ -39,16 +39,10 @@ class BSCheckboxInput(forms.CheckboxInput):
         return mark_safe(self.TEMPLATE.format(default_input=default_input))
 
 class CreateGroupForm(forms.Form, DivForm):
-    # def __init__(self, *args, **kwargs):
-    #     print("Args are", args)
-    #     print("Kwargs are", kwargs)
-    #     return super(CreateGroupForm, self).__init__()
     name = forms.CharField(max_length=255,
                            widget=forms.TextInput(attrs={'class': 'form-control'}))
     blurb = forms.CharField(max_length=512,
                             widget=forms.Textarea(attrs={'class': 'form-control'}))
-    # is_open = forms.BooleanField(required=False, widget=BSCheckboxInput())
-    # is_open = forms.BooleanField(required=False, widget=forms.CheckboxInput())
     is_open = forms.BooleanField(required=False)
     image = forms.ImageField(required=False,
                              widget=forms.FileInput(attrs={'class': 'form-control'}))
