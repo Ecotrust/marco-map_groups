@@ -107,7 +107,13 @@
             <h4>Map Bookmarks</h4>
             <ul>
                 {% for object in shared_items.bookmarks %}
-                    <li><a href="/visualize/#bookmark={{ object.pk }}" target="_blank">{{ object.name }}</a></li>
+                    <li>
+                      {% if user_is_member %}
+                        <a href="/visualize/#bookmark={{ object.pk }}" target="_blank">{{ object.name }}</a>
+                      {% else %}
+                        {{ object.name }}
+                      {% endif %}
+                    </li>
                 {% empty %}
                     <li>No shared maps.</li>
                 {% endfor %}
