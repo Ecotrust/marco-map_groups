@@ -9,3 +9,14 @@ button.rus-submit {
 button.rus-submit::first-letter {
   text-transform: capitalize;
 }
+
+table.modal-bookmark-table th,
+table.modal-bookmark-table td {
+  padding: 0.25rem;
+}
+
+table.modal-layer-table th,
+table.modal-layer-table td {
+  padding: 0.1rem;
+  border: 1px solid #e5e5e5;
+}

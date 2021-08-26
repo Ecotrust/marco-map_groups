@@ -31,7 +31,7 @@
             <p class='rich-text'>{{ mapgroup.blurb }}</p>
         </div>
 
-        {% if mapgroup.is_open or user_is_member %}
+        {% if mapgroup.is_open or user_is_member or user.is_superuser %}
           <h3>Group Information</h3>
           <p><strong>Group since:</strong> {{ mapgroup.creation_date|date }}</p>
           <p><strong>Owned by:</strong> {% if user_is_member %}
@@ -100,7 +100,7 @@
         {% endif %}
 
         {% if shared_items %}
-          {% if mapgroup.is_open or user_is_member %}
+          {% if mapgroup.is_open or user_is_member or user.is_superuser %}
             <h3>Shared Items</h3>
 
             {% if shared_items.bookmarks %}
@@ -113,6 +113,13 @@
                       {% else %}
                         {{ object.name }}
                       {% endif %}
+                      {% if user.is_superuser %}
+                        <i class="fa fa-info-circle" data-toggle="modal"
+                          data-target="#bookmark-audit-modal"
+                          data-bookmark_id="{{ object.pk }}"
+                          data-bookmark_name="{{ object.name }}"></i>
+                      {% endif %}
+
                     </li>
                 {% empty %}
                     <li>No shared maps.</li>
@@ -203,7 +210,7 @@
             {% endfor %}
           </table>
         {% endif %}
-        {% if mapgroup.is_open or user_is_member %}
+        {% if mapgroup.is_open or user_is_member or user.is_superuser %}
           <h3>Group Members</h3>
           <table class="group-membership-list">
               {% for member in sorted_member_list %}
@@ -294,6 +301,23 @@
         </div>
     </div>
 </div>
+
+
+<div class="modal fade" id="bookmark-audit-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+      <div class="modal-content">
+          <div class="modal-header" id="bookmark-modal-title">
+              Bookmark Details
+          </div>
+          <div class="modal-body" id="bookmark-modal-content">
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-default" data-dismiss="modal">Dismiss</button>
+          </div>
+      </div>
+  </div>
+</div>
+
 
 <div class="modal fade" id="rus-membership-approval" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
     <div class="modal-dialog">
