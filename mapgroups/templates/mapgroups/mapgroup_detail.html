@@ -153,7 +153,21 @@
             <h4>Drawings</h4>
             <ul>
                 {% for object in shared_items.drawings %}
-                    <li>{{ object.name }}</li>
+                    <li>
+                      {{ object.name }}
+                      {% if user.is_superuser %}
+                        <i class="fa fa-info-circle" data-toggle="modal"
+                          data-target="#drawing-audit-modal"
+                          data-drawing_id="{{ object.pk }}"
+                          data-drawing_name="{{ object.name }}"
+                          data-drawing_owner_id="{{ object.user.pk }}"
+                          data-drawing_owner_name="{{ object.user.username }}"
+                          data-drawing_description="{{ object.description }}"
+                          data-user_admin_url="{{ user_admin_root_url }}"
+                          data-drawing_admin_url="{{ drawing_admin_root_url }}"></i>
+                      {% endif %}
+                    </li>
+
                 {% empty %}
                     <li>No shared drawings.</li>
                 {% endfor %}
@@ -310,6 +324,21 @@
               Bookmark Details
           </div>
           <div class="modal-body" id="bookmark-modal-content">
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-default" data-dismiss="modal">Dismiss</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="drawing-audit-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+      <div class="modal-content">
+          <div class="modal-header" id="drawing-modal-title">
+              Drawing Details
+          </div>
+          <div class="modal-body" id="drawing-modal-content">
           </div>
           <div class="modal-footer">
               <button type="button" class="btn btn-default" data-dismiss="modal">Dismiss</button>

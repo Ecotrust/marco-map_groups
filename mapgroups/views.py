@@ -102,6 +102,11 @@ class MapGroupDetailView(DetailView):
         member_requests.sort(key=lambda x: x.user_name_for_user(self.request.user).lower())
         context['member_requests'] = member_requests
 
+        split_string = '9999LKSEJF09999'    #sufficiently complex to be unlikely to occur natually, but even that is handled below
+        context['drawing_admin_root_url'] = split_string.join(reverse('admin:drawing_aoi_change', args=(split_string,)).split(split_string)[0:-1])
+        context['user_admin_root_url'] = split_string.join(reverse('admin:auth_user_change', args=(split_string,)).split(split_string)[0:-1])
+
+
         return context
 
 class MapGroupListView(ListView):
