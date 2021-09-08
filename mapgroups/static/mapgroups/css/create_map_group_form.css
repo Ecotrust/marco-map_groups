@@ -22,3 +22,8 @@ div.toggle.btn {
   color: #000;
   background-color: #f3f3f4;
 }
+
+div.group-form-disclaimer {
+  margin: 2rem 4rem;
+  font-size: 12px;
+}
