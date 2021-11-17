@@ -219,6 +219,7 @@ class MapGroup(models.Model):
         # file without writing it to disk first, and this works pretty well.
 
         group_image_data.seek(0)
+        self.image.file = group_image_data  #RDH 20211116 -- this makes TempUpload work like MemUpload
         self.image.file.file = group_image_data
 
 
