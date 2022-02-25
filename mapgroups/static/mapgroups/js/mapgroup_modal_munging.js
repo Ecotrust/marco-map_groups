@@ -87,17 +87,23 @@ $('#drawing-audit-modal').on('show.bs.modal', function (event) {
   $('#drawing-modal-title').html(drawing_name + ' Details');
   $('#drawing-modal-content').html(
     '<div class="row">' + 
-      '<div class="col-lg-4">' +
+      '<div class="col-sm-1"></div>' +
+      '<div class="col-sm-10">' +
         '<table>' +
           '<tr><th>Name: </th><td>' + drawing_name + '</td></tr>' +
           '<tr><th>Description:&nbsp;&nbsp;&nbsp; </th><td>' + drawing_description + '</td></tr>' +
           '<tr><th>Owner: </th><td>' + drawing_owner_name + '</td></tr>' +
         '</table>' +
       '</div>' +
-      '<div class="col-lg-8">' +
+      '<div class="col-sm-1"></div>' +
+    '</div>' +
+    '<div class="row">' + 
+      '<div class="col-sm-3"></div>' +
+      '<div class="col-lg-6">' +
         '<div id="map" class="map">' +
         '</div>' +
       '</div>' +
+      '<div class="col-sm-3"></div>' +
     '</div>'
   );
   draw_map(button.data('drawing_json'));
