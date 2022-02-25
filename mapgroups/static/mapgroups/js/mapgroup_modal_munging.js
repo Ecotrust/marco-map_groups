@@ -40,6 +40,41 @@ $('#bookmark-audit-modal').on('show.bs.modal', function (event) {
 
 });
 
+var draw_map = function(drawing_json) {
+
+  var baselayer = new ol.layer.Tile({
+    source: new ol.source.OSM(),
+  });
+
+  var features = new ol.format.GeoJSON().readFeatures(drawing_json);
+  vectorSource = new ol.source.Vector({
+    wrapX: false,
+    features: features
+  });
+  var vectorLayer = new ol.layer.Vector({
+    source: vectorSource,
+  });
+  map = new ol.Map({
+    layers: [
+      baselayer,
+      vectorLayer
+    ],
+    target: 'map',
+    view: new ol.View({
+      center: [
+        -13580977,
+        5471521
+      ],
+      zoom: 6,
+    })
+  });
+  map.getView().fit(vectorSource.getExtent(), {'duration': 1000});
+  window.setTimeout(
+    function(){map.updateSize();}, 
+    500
+  );
+}
+
 $('#drawing-audit-modal').on('show.bs.modal', function (event) {
   var button = $(event.relatedTarget); // Button that triggered the modal
   var drawing_id = button.data('drawing_id');
@@ -50,13 +85,22 @@ $('#drawing-audit-modal').on('show.bs.modal', function (event) {
   var drawing_owner_name = button.data('drawing_owner_name');
   var user_admin_url = button.data('user_admin_url');
   $('#drawing-modal-title').html(drawing_name + ' Details');
-  $('#drawing-modal-content').html('<p><a target="_blank" href="' + drawing_admin_url + drawing_id + '/change/">View in Admin</a></p>' +
-    '<table>' +
-      '<tr><th>Name: </th><td>' + drawing_name + '</td></tr>' +
-      '<tr><th>Description: </th><td>' + drawing_description + '</td></tr>' +
-      '<tr><th>Owner: </th><td><a target="_blank" href="' + user_admin_url + drawing_owner_id + '/change/">' + drawing_owner_name + '</td></tr>' +
-    '</table>'
+  $('#drawing-modal-content').html(
+    '<div class="row">' + 
+      '<div class="col-lg-4">' +
+        '<table>' +
+          '<tr><th>Name: </th><td>' + drawing_name + '</td></tr>' +
+          '<tr><th>Description:&nbsp;&nbsp;&nbsp; </th><td>' + drawing_description + '</td></tr>' +
+          '<tr><th>Owner: </th><td>' + drawing_owner_name + '</td></tr>' +
+        '</table>' +
+      '</div>' +
+      '<div class="col-lg-8">' +
+        '<div id="map" class="map">' +
+        '</div>' +
+      '</div>' +
+    '</div>'
   );
+  draw_map(button.data('drawing_json'));
 });
 
 $('#rus-membership-approval').on('show.bs.modal', function (event) {
