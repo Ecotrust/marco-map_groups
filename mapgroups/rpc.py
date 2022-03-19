@@ -5,6 +5,8 @@ SRH May-2015
 """
 
 from rpc4django import rpcmethod
+from django.conf import settings
+from django.contrib.auth.models import Group
 from mapgroups.models import MapGroup
 
 @rpcmethod(login_required=True)
@@ -20,6 +22,14 @@ def get_sharing_groups(request):
             'group_name': group.name,
             'group_slug': group.permission_group.name,
             'members': members,
+            'is_mapgroup': True,
+        })
+    for public_group in Group.objects.filter(name__in=settings.SHARING_TO_PUBLIC_GROUPS):
+        data.append({
+            'group_name': public_group.name,
+            'group_slug': public_group.name,
+            'members': [],
+            'is_mapgroup': False,
         })
 
     return data
