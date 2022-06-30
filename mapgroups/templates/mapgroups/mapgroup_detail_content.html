@@ -170,6 +170,33 @@
                 {% endfor %}
             </ul>
             {% endif %}
+
+            {% if shared_items.user_imported_layers %}
+            <h4>User-Imported Layers</h4>
+            <ul>
+                {% for object in shared_items.user_imported_layers %}
+                    <li>
+                      {{ object.name }}
+                      {% if mapgroup.is_open or user_is_member or user.is_superuser %}
+                        <i class="fa fa-info-circle" data-toggle="modal"
+                          data-target="#user-layer-audit-modal"
+                          data-userlayer_id="{{ object.pk }}"
+                          data-userlayer_name="{{ object.name }}"
+                          data-userlayer_owner_id="{{ object.user.pk }}"
+                          data-userlayer_owner_name="{{ object.user.username }}"
+                          data-userlayer_description="{{ object.description }}"
+                          data-userlayer_user_admin_url="{{ user_admin_root_url }}"
+                          data-userlayer_admin_url="{{ user_layer_admin_root_url }}"
+                          >
+                        </i>
+                      {% endif %}
+                    </li>
+
+                {% empty %}
+                    <li>No shared user-imported layers.</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
           {% endif %}
         {% endif %}
     </div>
@@ -325,9 +352,27 @@
               Drawing Details
           </div>
           {% if user.is_superuser %}
-            <p style="margin: 2rem 0 0 2rem;"><a target="_blank" href="' + drawing_admin_url + drawing_id + '/change/">View in Admin</a></p>
+            <div id="drawing-modal-admin-link"></div>
           {% endif %}
           <div class="modal-body" id="drawing-modal-content">
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-default" data-dismiss="modal">Dismiss</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="user-layer-audit-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+      <div class="modal-content">
+          <div class="modal-header" id="user-layer-modal-title">
+              User-Imported Layer Details
+          </div>
+          {% if user.is_superuser %}
+          <div id="user-layer-modal-admin-link"></div>
+          {% endif %}
+          <div class="modal-body" id="user-layer-modal-content">
           </div>
           <div class="modal-footer">
               <button type="button" class="btn btn-default" data-dismiss="modal">Dismiss</button>

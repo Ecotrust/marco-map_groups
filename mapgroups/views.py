@@ -86,6 +86,7 @@ class MapGroupDetailView(DetailView):
         shared_items['leaseblock_selections'] = pg.scenarios_leaseblockselection_related.all()
         shared_items['drawings'] = pg.drawing_aoi_related.all()
         shared_items['windenergysites'] = pg.drawing_windenergysite_related.all()
+        shared_items['user_imported_layers'] = pg.visualize_userlayer_related.all()
 
         if any(shared_items.values()):
             context['shared_items'] = shared_items
@@ -105,6 +106,7 @@ class MapGroupDetailView(DetailView):
         split_string = '9999LKSEJF09999'    #sufficiently complex to be unlikely to occur natually, but even that is handled below
         context['drawing_admin_root_url'] = split_string.join(reverse('admin:drawing_aoi_change', args=(split_string,)).split(split_string)[0:-1])
         context['user_admin_root_url'] = split_string.join(reverse('admin:auth_user_change', args=(split_string,)).split(split_string)[0:-1])
+        context['user_layer_admin_root_url'] = split_string.join(reverse('admin:visualize_userlayer_change', args=(split_string,)).split(split_string)[0:-1])
 
 
         return context
