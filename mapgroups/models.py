@@ -282,6 +282,10 @@ class MapGroup(models.Model):
             return self.image.url
         return static('mapgroups/mapgroups-default-image.jpg')
 
+    def delete(self, *args, **kwargs):
+        pgroup = self.permission_group
+        super(MapGroup, self).delete(*args, **kwargs)
+        pgroup.delete()
 
 class MapGroupMember(models.Model):
     class Meta:

@@ -20,9 +20,13 @@ class MapGroupAdmin(admin.ModelAdmin):
         """
         return False
 
-    def has_delete_permission(self, request, obj=None):
-        """Restrict deleting map groups in admin
-        """
-        return False
+    def delete_queryset(self, request, object):
+        pgroups = []
+        for mgroup in object:
+            pgroup = mgroup.permission_group
+            pgroups.append(pgroup)
+        object.delete()
+        for pgroup in pgroups:
+            pgroup.delete()
 
 admin.site.register(MapGroup, MapGroupAdmin)

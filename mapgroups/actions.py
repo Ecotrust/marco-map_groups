@@ -82,10 +82,8 @@ def delete_owned_map_group(user, group):
     if group.owner != user:
         return False
 
-    pgroup = group.permission_group
     group.delete()
-    pgroup.delete()
-
+    # custom override of MapGroup model's delete method should manage Auth Group relationships
     # foreign key cascaded deletes should take care of everything else.
 
     return True
