@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required
+from django.db.models import Case, When, BooleanField
 try:
     from django.urls import reverse, reverse_lazy
 except (ModuleNotFoundError, ImportError):
@@ -60,7 +61,12 @@ class MapGroupDetailView(DetailView):
     model = MapGroup
     context_object_name ='mapgroup'
 
-    def get_context_data(self, **kwargs):
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        context = self.get_context_data(request, object=self.object)
+        return self.render_to_response(context)
+
+    def get_context_data(self, request, **kwargs):
         context = super(MapGroupDetailView, self).get_context_data(**kwargs)
         context['title'] = self.object.name
         context['owner'] = self.object.get_owner_membership()
@@ -81,12 +87,20 @@ class MapGroupDetailView(DetailView):
 
         pg = self.object.permission_group
         shared_items = {}
-        shared_items['bookmarks'] = pg.visualize_bookmark_related.all()
-        shared_items['scenarios'] = pg.scenarios_scenario_related.all()
-        shared_items['leaseblock_selections'] = pg.scenarios_leaseblockselection_related.all()
-        shared_items['drawings'] = pg.drawing_aoi_related.all()
-        shared_items['windenergysites'] = pg.drawing_windenergysite_related.all()
-        shared_items['user_imported_layers'] = pg.visualize_userlayer_related.all()
+        shared_items['bookmarks'] = pg.visualize_bookmark_related.all().annotate(
+            is_owner=Case(
+                When(
+                    user=request.user, then=True
+                ), 
+                default=False, 
+                output_field=BooleanField()
+            )
+        ).order_by('-is_owner','name','user')
+        shared_items['scenarios'] = pg.scenarios_scenario_related.all().annotate(is_owner=Case(When(user=request.user, then=True), default=False, output_field=BooleanField())).order_by('-is_owner','name','user')
+        shared_items['leaseblock_selections'] = pg.scenarios_leaseblockselection_related.all().annotate(is_owner=Case(When(user=request.user, then=True), default=False, output_field=BooleanField())).order_by('-is_owner','name','user')
+        shared_items['drawings'] = pg.drawing_aoi_related.all().annotate(is_owner=Case(When(user=request.user, then=True), default=False, output_field=BooleanField())).order_by('-is_owner','name','user')
+        shared_items['windenergysites'] = pg.drawing_windenergysite_related.all().annotate(is_owner=Case(When(user=request.user, then=True), default=False, output_field=BooleanField())).order_by('-is_owner','name','user')
+        shared_items['user_imported_layers'] = pg.visualize_userlayer_related.all().annotate(is_owner=Case(When(user=request.user, then=True), default=False, output_field=BooleanField())).order_by('-is_owner','name','user')
 
         if any(shared_items.values()):
             context['shared_items'] = shared_items

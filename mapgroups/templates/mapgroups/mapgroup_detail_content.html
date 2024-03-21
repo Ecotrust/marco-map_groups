@@ -98,6 +98,7 @@
                       {% else %}
                         {{ object.name }}
                       {% endif %}
+                      {% if object.user == user %}<b>[Yours]</b>{% endif %}
                       {% if user.is_superuser %}
                         <i class="fa fa-info-circle" data-toggle="modal"
                           data-target="#bookmark-audit-modal"
@@ -116,7 +117,10 @@
             <h4>Scenarios</h4>
             <ul>
                 {% for object in shared_items.scenarios %}
-                    <li>{{ object.name }}</li>
+                    <li>
+                      {{ object.name }}
+                      {% if object.user == user %}<b>[Yours]</b>{% endif %}
+                    </li>
                 {% empty %}
                     <li>No shared scenarios.</li>
                 {% endfor %}
@@ -127,7 +131,10 @@
             <h4>Lease Block Selections</h4>
             <ul>
                 {% for object in shared_items.leaseblock_selections %}
-                    <li>{{ object.name }}</li>
+                    <li>
+                      {{ object.name }}
+                      {% if object.user == user %}<b>[Yours]</b>{% endif %}
+                    </li>
                 {% empty %}
                     <li>No shared lease block selections.</li>
                 {% endfor %}
@@ -141,6 +148,7 @@
                     <li>
                       {{ object.name }}
                       {% if mapgroup.is_open or user_is_member or user.is_superuser %}
+                        {% if object.user == user %}<b>[Yours]</b>{# comment {% else %}[ {{ object.user.username }} ] end_comment #}{% endif %}
                         <i class="fa fa-info-circle" data-toggle="modal"
                           data-target="#drawing-audit-modal"
                           data-drawing_id="{{ object.pk }}"
@@ -164,7 +172,10 @@
             <h4>Wind Energy Sites</h4>
             <ul>
                 {% for object in shared_items.windenergysites %}
-                    <li>{{ object.name }}</li>
+                    <li>
+                      {{ object.name }}
+                      {% if object.user == user %}<b>[Yours]</b>{% endif %}
+                    </li>
                 {% empty %}
                     <li>No shared wind energy sites.</li>
                 {% endfor %}
@@ -177,6 +188,7 @@
                 {% for object in shared_items.user_imported_layers %}
                     <li>
                       {{ object.name }}
+                      {% if object.user == user %}<b>[Yours]</b>{% endif %}
                       {% if mapgroup.is_open or user_is_member or user.is_superuser %}
                         <i class="fa fa-info-circle" data-toggle="modal"
                           data-target="#user-layer-audit-modal"
