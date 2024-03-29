@@ -92,8 +92,8 @@ class MapGroupDetailView(DetailView):
             # When(user=None, then=False),
             shared_items['bookmarks'] = pg.visualize_bookmark_related.all().annotate(is_owner=Case(default=False, output_field=BooleanField())).order_by('name','user')
             shared_items['scenarios'] = pg.scenarios_scenario_related.all().annotate(is_owner=Case(default=False, output_field=BooleanField())).order_by('name','user')
-            shared_items['leaseblock_selections'] = pg.drawing_aoi_related.all().annotate(is_owner=Case(default=False, output_field=BooleanField())).order_by('name','user')
-            shared_items['drawings'] = pg.drawing_windenergysite_related.all().annotate(is_owner=Case(default=False, output_field=BooleanField())).order_by('name','user')
+            shared_items['leaseblock_selections'] = pg.scenarios_leaseblockselection_related.all().annotate(is_owner=Case(default=False, output_field=BooleanField())).order_by('name','user')
+            shared_items['drawings'] = pg.drawing_aoi_related.all().annotate(is_owner=Case(default=False, output_field=BooleanField())).order_by('name','user')
             shared_items['windenergysites'] = pg.drawing_windenergysite_related.all().annotate(is_owner=Case(default=False, output_field=BooleanField())).order_by('name','user')
             shared_items['user_imported_layers'] = pg.visualize_userlayer_related.all().annotate(is_owner=Case(default=False, output_field=BooleanField())).order_by('name','user')
         else:
