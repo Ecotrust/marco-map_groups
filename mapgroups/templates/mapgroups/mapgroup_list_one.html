@@ -9,7 +9,10 @@
             <div class="media-inner">
                 <a href="{{ item.url }}" style="padding:0;">
                     <div class="month" title="Date Created">{{ mapgroup.creation_date|date:"m.Y" }}</div>
-                    <div class="badge" title="Number of Members">{{ mapgroup.mapgroupmember_set.count }}</div>
+                    <div class="badge labelled-badge" title="Number of Members">
+                        {{ mapgroup.mapgroupmember_set.count }} <br />
+                        <span class="badge-text badge-label">Members</span>
+                    </div>
                 </a>
             </div>
         </div>
