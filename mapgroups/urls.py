@@ -55,7 +55,7 @@ urlpatterns = [
         RemoveMapGroupImageActionView.as_view(), name='remove-image'),
     re_path(r'^(?P<pk>\d+)/(?P<slug>[\w-]+)/$',
         MapGroupDetailView.as_view(), name='detail'),
-    re_path(r'^(?P<pk>\d+)/(?P<slug>[\w-]+)/preferences$',
+    re_path(r'^(?P<pk>\d+)/(?P<slug>[\w-]+)/preferences/?$',
         MapGroupPreferencesView.as_view(), name='preferences'),
     re_path(r'^(?P<pk>\d+)/(?P<slug>[\w-]+)/join$',
         JoinMapGroupActionView.as_view(), name='join'),
